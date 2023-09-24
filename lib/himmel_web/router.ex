@@ -23,7 +23,7 @@ defmodule HimmelWeb.Router do
     # get "/", PageController, :home
     live_session :weather,
       on_mount: [{HimmelWeb.UserAuth, :mount_current_user}] do
-      live "/", WeatherLive
+      live "/", AppLive
     end
   end
 
