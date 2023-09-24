@@ -1,14 +1,28 @@
-defmodule HimmelWeb.WeatherLive do
+defmodule HimmelWeb.AppLive do
   use HimmelWeb, :live_view
-
+  alias Himmel.Weather
   alias HimmelWeb.{MainLive, PlacesLive, SettingsLive}
 
+  @doc """
+  MAIN shows data for the current PLACE. If there's a user session or authenticated user's places and history,
+  the last loaded place is shown. Otherwise, the user's IP is used to get the current place and weather.
+  """
   def mount(_params, _session, socket) do
+    user = false
+
+    main_weather =
+      if user do
+        # get user's last loaded place
+      else
+        # get current weather from user's IP
+        Weather.get_weather_from_ip(socket)
+      end
+
     {:ok,
      assign(socket,
        #  socket.assigns.current_user will be here
        main: %{
-         location: "Phoenix",
+         place: "Phoenix",
          temperature: 98,
          description: "Sunny",
          high: 100,
