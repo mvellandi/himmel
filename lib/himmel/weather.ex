@@ -24,10 +24,9 @@ defmodule Himmel.Weather do
     |> Utils.json_request()
     |> Map.put("place", place)
     |> prepare_current_weather()
+    |> prepare_daily_weather()
 
     # |> prepare_hourly_weather()
-
-    # |> prepare_daily_weather()
   end
 
   def get_weather(place) when is_binary(place) do
@@ -58,15 +57,17 @@ defmodule Himmel.Weather do
     daily = weather["daily"]
 
     daily_temperature =
-      Enum.zip_reduce([daily["temperature_2m_max"], daily["temperature_2m_min"]], [], fn {high,
-                                                                                          low},
+      Enum.zip_reduce([daily["temperature_2m_max"], daily["temperature_2m_min"]], [], fn [
+                                                                                           high,
+                                                                                           low
+                                                                                         ],
                                                                                          acc ->
         [%{"high" => round(high), "low" => round(low)} | acc]
       end)
       |> Enum.reverse()
 
     daily_suntimes =
-      Enum.zip_reduce([daily["sunrise"], daily["sunset"]], [], fn {sunrise, sunset}, acc ->
+      Enum.zip_reduce([daily["sunrise"], daily["sunset"]], [], fn [sunrise, sunset], acc ->
         [
           %{
             "sunrise" => Utils.meteo_datetime_to_struct(sunrise),
@@ -81,21 +82,21 @@ defmodule Himmel.Weather do
       Enum.zip_reduce(
         [daily["time"], daily_temperature, daily_suntimes, daily["weathercode"]],
         [],
-        fn {time, temperature, suntimes, weathercode}, acc ->
+        fn [time, temperature, suntimes, weathercode], acc ->
           [
             %{
-              "day" =>
-                Utils.meteo_datetime_to_struct(time) |> DateTime.to_date() |> Map.get(:day),
+              "weekday" => Utils.weekday_name_from_date(time),
               "temperature" => temperature,
               "sunrise" => suntimes["sunrise"],
               "sunset" => suntimes["sunset"],
-              "description" => Descriptions.get(weathercode, "day")
+              "description" => Descriptions.get_description(weathercode, "day")
             }
             | acc
           ]
         end
       )
       |> Enum.reverse()
+      |> List.update_at(0, &Map.put(&1, "weekday", "Today"))
 
     %{weather | "daily" => daily_data}
   end
