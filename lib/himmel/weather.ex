@@ -48,7 +48,7 @@ defmodule Himmel.Weather do
       weather
       | "current_weather" => %{
           "temperature" => round(current["temperature"]),
-          "description" => Descriptions.get(current["weathercode"], day_or_night),
+          "description" => Descriptions.get_description(current["weathercode"], day_or_night),
           "day_or_night" => day_or_night
         }
     }

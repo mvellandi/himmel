@@ -1,5 +1,5 @@
 defmodule Himmel.Weather.Descriptions do
-  def get(weather_code, day_or_night) do
+  def get_description(weather_code, day_or_night) do
     all()
     |> Map.get(to_string(weather_code))
     |> Map.get(day_or_night)
