@@ -4,7 +4,7 @@ defmodule HimmelWeb.WeatherComponents do
   attr :id, :string, required: true
   attr :data, :map, required: true
 
-  def location_card(assigns) do
+  def place_card(assigns) do
     ~H"""
     <div id={@id} class="flex justify-between items-center rounded-xl bg-red-dark py-3.5 px-4">
       <div class="flex flex-col">

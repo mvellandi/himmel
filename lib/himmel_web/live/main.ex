@@ -14,7 +14,7 @@ defmodule HimmelWeb.MainLive do
           <button>P</button>
           <%!-- <% end %> --%>
           <div class="flex flex-col items-center pt-16 pb-12">
-            <h1 class="text-4xl"><%= @data.location %></h1>
+            <h1 class="text-4xl"><%= @data.place %></h1>
             <h2 class="text-8xl py-1 font-extralight">
               <%= @data.temperature %>
               <span class="relative"><span class="absolute">&deg;</span></span>

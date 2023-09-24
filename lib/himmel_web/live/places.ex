@@ -45,7 +45,7 @@ defmodule HimmelWeb.PlacesLive do
         </div>
         <%!-- SAVED PLACES --%>
         <%= for place <- @data.places, idx <- 1..length(@data.places) do %>
-          <.location_card id={"locationCard-#{idx}"} data={place} />
+          <.place_card id={"placeCard-#{idx}"} data={place} />
         <% end %>
       </div>
     </div>
