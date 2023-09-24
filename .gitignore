@@ -1,3 +1,9 @@
+# Env variables, secrets
+.env
+
+# Dev notes
+/notes/
+
 # The directory Mix will write compiled artifacts to.
 /_build/
 
@@ -35,3 +41,5 @@ himmel-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# System-related files
+.DS_STORE
