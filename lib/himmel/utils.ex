@@ -34,4 +34,22 @@ defmodule Himmel.Utils do
       when is_binary(datetime) do
     nil
   end
+
+  def weekday_name_from_date(time) when is_binary(time) do
+    day_number =
+      time
+      |> Date.from_iso8601()
+      |> elem(1)
+      |> Date.day_of_week()
+
+    case day_number do
+      1 -> "Mon"
+      2 -> "Tue"
+      3 -> "Wed"
+      4 -> "Thu"
+      5 -> "Fri"
+      6 -> "Sat"
+      7 -> "Sun"
+    end
+  end
 end
