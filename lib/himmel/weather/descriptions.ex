@@ -3,7 +3,6 @@ defmodule Himmel.Weather.Descriptions do
     all()
     |> Map.get(to_string(weather_code))
     |> Map.get(day_or_night)
-    |> Map.get("description")
   end
 
   def all do
