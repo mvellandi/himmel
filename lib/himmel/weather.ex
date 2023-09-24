@@ -53,17 +53,15 @@ defmodule Himmel.Weather do
     }
   end
 
-  def prepare_daily_weather(weather) do
-    daily = weather["daily"]
-
+  def prepare_daily_weather(%{"daily" => daily} = weather) do
     daily_temperature =
-      Enum.zip_reduce([daily["temperature_2m_max"], daily["temperature_2m_min"]], [], fn [
-                                                                                           high,
-                                                                                           low
-                                                                                         ],
-                                                                                         acc ->
-        [%{"high" => round(high), "low" => round(low)} | acc]
-      end)
+      Enum.zip_reduce(
+        [daily["temperature_2m_min"], daily["temperature_2m_max"]],
+        [],
+        fn [low, high], acc ->
+          [%{"high" => round(high), "low" => round(low)} | acc]
+        end
+      )
       |> Enum.reverse()
 
     daily_suntimes =
