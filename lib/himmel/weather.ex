@@ -18,7 +18,7 @@ defmodule Himmel.Weather do
   end
 
   def get_weather(%{latitude: latitude, longitude: longitude}, place) do
-    ("https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&current_weather=true&timezone=auto&" <>
+    ("https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&current_weather=true&forecast_days=10&timezone=auto&" <>
        "latitude=#{latitude}&" <>
        "longitude=#{longitude}")
     |> Utils.json_request()
