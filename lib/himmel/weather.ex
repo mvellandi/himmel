@@ -2,6 +2,14 @@ defmodule Himmel.Weather do
   alias Himmel.{Places, Utils}
   alias Himmel.Weather.Descriptions
 
+  @weather_keys [
+    "current",
+    "daily",
+    "hourly",
+    "data_timestamp",
+    "place"
+  ]
+
   def get_weather_from_ip(socket) do
     details =
       socket
@@ -17,6 +25,13 @@ defmodule Himmel.Weather do
     end
   end
 
+  def get_raw_weather() do
+    ("https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&current_weather=true&forecast_days=10&timezone=auto&" <>
+       "latitude=53.5488&" <>
+       "longitude=9.9872")
+    |> Utils.json_request()
+  end
+
   def get_weather(%{latitude: latitude, longitude: longitude}, place) do
     ("https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&current_weather=true&forecast_days=10&timezone=auto&" <>
        "latitude=#{latitude}&" <>
@@ -25,8 +40,8 @@ defmodule Himmel.Weather do
     |> Map.put("place", place)
     |> prepare_current_weather()
     |> prepare_daily_weather()
-
-    # |> prepare_hourly_weather()
+    |> prepare_hourly_weather(36)
+    |> Map.take(@weather_keys)
   end
 
   def get_weather(place) when is_binary(place) do
@@ -39,27 +54,28 @@ defmodule Himmel.Weather do
     get_weather(%{latitude: lat, longitude: lon}, place)
   end
 
-  def prepare_current_weather(weather) do
+  defp prepare_current_weather(weather) do
     current = weather["current_weather"]
     day_or_night = if current["is_day"] == 0, do: "night", else: "day"
 
-    %{
-      weather
-      | "current_weather" => %{
-          "temperature" => round(current["temperature"]),
-          "description" => Descriptions.get_description(current["weathercode"], day_or_night),
-          "day_or_night" => day_or_night
-        }
+    updated_current_weather = %{
+      "temperature" => round(current["temperature"]) |> to_string(),
+      "description" => Descriptions.get_description(current["weathercode"], day_or_night),
+      "day_or_night" => day_or_night
     }
+
+    weather
+    |> Map.put("current", updated_current_weather)
+    |> Map.put("data_timestamp", Utils.meteo_datetime_to_struct(current["time"], weather))
   end
 
-  def prepare_daily_weather(%{"daily" => daily} = weather) do
+  defp prepare_daily_weather(%{"daily" => daily} = weather) do
     daily_temperature =
       Enum.zip_reduce(
         [daily["temperature_2m_min"], daily["temperature_2m_max"]],
         [],
         fn [low, high], acc ->
-          [%{"high" => round(high), "low" => round(low)} | acc]
+          [%{"high" => round(high) |> to_string, "low" => round(low) |> to_string} | acc]
         end
       )
       |> Enum.reverse()
@@ -68,8 +84,8 @@ defmodule Himmel.Weather do
       Enum.zip_reduce([daily["sunrise"], daily["sunset"]], [], fn [sunrise, sunset], acc ->
         [
           %{
-            "sunrise" => Utils.meteo_datetime_to_struct(sunrise),
-            "sunset" => Utils.meteo_datetime_to_struct(sunset)
+            "sunrise" => Utils.meteo_datetime_to_struct(sunrise, weather),
+            "sunset" => Utils.meteo_datetime_to_struct(sunset, weather)
           }
           | acc
         ]
@@ -84,6 +100,7 @@ defmodule Himmel.Weather do
           [
             %{
               "weekday" => Utils.weekday_name_from_date(time),
+              "date" => time |> Date.from_iso8601() |> elem(1),
               "temperature" => temperature,
               "sunrise" => suntimes["sunrise"],
               "sunset" => suntimes["sunset"],
@@ -99,24 +116,38 @@ defmodule Himmel.Weather do
     %{weather | "daily" => daily_data}
   end
 
-  def prepare_hourly_weather(%{"hourly" => hourly} = weather) do
-    hourly =
-      weather["hourly"] |> Enum.map(fn {k, v} -> {k, Enum.take(v, 36)} end) |> Map.new()
+  defp prepare_hourly_weather(%{"hourly" => hourly} = weather, hours_to_forecast) do
+    data_timestamp = weather["data_timestamp"]
 
-    # hourly_data =
-    #   Enum.zip_with(hourly["time"], hourly["temperature_2m"], hourly["weathercode"], fn time,
-    #                                                                                     temperature,
-    #                                                                                     weathercode ->
-    #     %{
-    #       "hour" => Utils.meteo_datetime_to_hour_string(time),
-    #       "temperature" => round(temperature),
-    #       "description" => Descriptions.get(weathercode)
-    #     }
-    #   end)
+    first_3_days = Enum.take(weather["daily"], 3)
 
-    # time = hourly["time"] |> Enum.map(&Utils.meteo_datetime_to_hour_string/1)
+    all_hourly_forecasts =
+      [hourly["time"], hourly["temperature_2m"], hourly["weathercode"]]
+      |> Enum.zip()
+      |> Enum.map(fn {datetime, temperature, weathercode} ->
+        datetime_struct = Utils.meteo_datetime_to_struct(datetime, weather)
+        day_or_night = Utils.is_datetime_day_or_night?(datetime_struct, first_3_days)
 
-    # %{ weather | "hourly" => Enum.zip(list1, list2, list3)}
-    # weather
+        %{
+          "hour" => Utils.meteo_datetime_to_hour_string(datetime),
+          "temperature" => round(temperature) |> to_string(),
+          "description" => Descriptions.get_description(weathercode, day_or_night),
+          "day_or_night" => day_or_night,
+          "datetime" => datetime_struct
+        }
+      end)
+
+    current_hour =
+      Enum.find_index(all_hourly_forecasts, fn forecast ->
+        forecast["datetime"].hour == data_timestamp.hour
+      end)
+
+    hourly_forecasts =
+      all_hourly_forecasts
+      |> Enum.drop(current_hour)
+      |> Enum.take(hours_to_forecast)
+      |> Enum.map(fn forecast -> Map.drop(forecast, ["datetime"]) end)
+
+    %{weather | "hourly" => hourly_forecasts}
   end
 end
