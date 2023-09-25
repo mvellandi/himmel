@@ -15,24 +15,22 @@ defmodule Himmel.Utils do
     (fahrenheit - 32) / 1.8
   end
 
-  def meteo_datetime_to_struct(datetime) when is_binary(datetime) do
-    (datetime <> ":00Z")
-    |> DateTime.from_iso8601()
-    |> elem(1)
+  def meteo_datetime_to_struct(datetime, weather) when is_binary(datetime) do
+    init_datetime =
+      (datetime <> ":00Z")
+      |> DateTime.from_iso8601()
+      |> elem(1)
+
+    [date, time] = [DateTime.to_date(init_datetime), DateTime.to_time(init_datetime)]
+
+    DateTime.new(date, time, weather["timezone"]) |> elem(1)
   end
 
   def meteo_datetime_to_hour_string(datetime) when is_binary(datetime) do
-    hour = meteo_datetime_to_struct(datetime) |> DateTime.to_time() |> Map.get(:hour)
-
-    case hour < 10 do
-      true -> "0" <> to_string(hour)
-      false -> to_string(hour)
-    end
-  end
-
-  def meteo_datetime_night_or_day(%{datetime: datetime, weather: weather})
-      when is_binary(datetime) do
-    nil
+    String.split(datetime, "T")
+    |> List.last()
+    |> String.split(":")
+    |> List.first()
   end
 
   def weekday_name_from_date(time) when is_binary(time) do
@@ -51,5 +49,29 @@ defmodule Himmel.Utils do
       6 -> "Sat"
       7 -> "Sun"
     end
+  end
+
+  def find_matching_day_from_daily_weather_list(list, date) do
+    is_match_date? = fn query_date, item_date -> query_date == item_date end
+
+    Enum.find(list, fn weather_day ->
+      DateTime.to_date(date)
+      |> is_match_date?.(weather_day["date"])
+    end)
+  end
+
+  def is_day_or_night?(datetime, sunrise, sunset) do
+    case datetime < sunrise || datetime > sunset do
+      true -> "night"
+      false -> "day"
+    end
+  end
+
+  def is_datetime_day_or_night?(datetime, daily_weather_list) do
+    matching_day =
+      daily_weather_list
+      |> find_matching_day_from_daily_weather_list(datetime)
+
+    is_day_or_night?(datetime, matching_day["sunrise"], matching_day["sunset"])
   end
 end
