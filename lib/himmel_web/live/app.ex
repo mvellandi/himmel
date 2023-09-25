@@ -10,9 +10,10 @@ defmodule HimmelWeb.AppLive do
   def mount(_params, _session, socket) do
     user = false
 
-    main_weather =
+    weather =
       if user do
-        # get user's last loaded place
+        # TODO: get user's last loaded place
+        Weather.get_weather_from_ip(socket)
       else
         # get current weather from user's IP
         Weather.get_weather_from_ip(socket)
@@ -22,13 +23,13 @@ defmodule HimmelWeb.AppLive do
      assign(socket,
        #  socket.assigns.current_user will be here
        main: %{
-         place: "Phoenix",
-         temperature: 98,
-         description: "Sunny",
-         high: 100,
-         low: 85,
-         hours: MainLive.hours_data(),
-         days: MainLive.days_data()
+         place: weather["place"],
+         temperature: weather["current"]["temperature"],
+         description: weather["current"]["description"]["text"],
+         high: hd(weather["daily"])["temperature"]["high"],
+         low: hd(weather["daily"])["temperature"]["low"],
+         hours: weather["hourly"],
+         days: weather["daily"]
        },
        places: %{
          places: PlacesLive.get_places_weather(),
