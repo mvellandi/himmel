@@ -21,8 +21,8 @@ defmodule HimmelWeb.MainLive do
             </h2>
             <h3 class="text-2xl"><%= @data.description %></h3>
             <div class="flex justify-between gap-5 text-2xl">
-              <h4>H: <%= @data.high %>&deg;</h4>
               <h4>L: <%= @data.low %>&deg;</h4>
+              <h4>H: <%= @data.high %>&deg;</h4>
             </div>
           </div>
           <%!-- <%= if length(parent.places) > 1 && "this isn't the last place" do %> --%>
@@ -31,52 +31,50 @@ defmodule HimmelWeb.MainLive do
         </div>
       </div>
       <%!-- TODAY --%>
-      <div class="relative flex gap-7 rounded-xl p-4 bg-red-dark overflow-x-auto whitespace-nowrap scrollbar-hide">
+      <div class="relative flex gap-2 rounded-xl p-4 bg-red-dark overflow-x-auto whitespace-nowrap hour-scrollbar">
         <%!-- HOUR COLUMNS --%>
         <.hours hours={@data.hours} />
       </div>
       <%!-- 10-DAYS --%>
       <div class="flex flex-col rounded-xl pt-2 pb-4 px-4 bg-red-dark">
-        <h3 class="uppercase text-red-medium text-[1.1rem] mb-4">Icon 10-Day Forecast</h3>
+        <h3 class="uppercase text-red-medium text-[1.1rem]">Icon 10-Day Forecast</h3>
         <%!-- DAY ROWS --%>
-        <div class="space-y-5">
-          <.days days={@data.days} />
-        </div>
+        <.days days={@data.days} />
       </div>
     </div>
     """
   end
 
-  def hours_data do
-    numbered_hours = Enum.concat([11..23, 0..9])
-    ["Now" | Enum.map(numbered_hours, &to_string/1)]
-  end
+  # def hours_data do
+  #   numbered_hours = Enum.concat([11..23, 0..9])
+  #   ["Now" | Enum.map(numbered_hours, &to_string/1)]
+  # end
 
   def hours(assigns) do
     ~H"""
     <%= for hour <- @hours do %>
-      <div class="flex flex-col items-center gap-2">
-        <h3 class="text-xl"><%= hour %></h3>
-        <span>Icon</span>
-        <span class="text-2xl">98</span>
+      <div class="flex flex-col items-center">
+        <h3 class="text-xl"><%= hour["hour"] %></h3>
+        <div class="h-12 w-12"><img src={hour["description"]["image"]} /></div>
+        <span class="text-2xl"><%= hour["temperature"] %></span>
       </div>
     <% end %>
     """
   end
 
-  def days_data do
-    ["Today", "Wed", "Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"]
-  end
+  # def days_data do
+  #   ["Today", "Wed", "Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"]
+  # end
 
   def days(assigns) do
     ~H"""
     <%= for day <- @days do %>
       <%!-- <div class="flex justify-between text-2xl"> --%>
       <div class="grid grid-cols-4 text-2xl">
-        <h4><%= day %></h4>
-        <span class="justify-self-end">Icon</span>
-        <span class="justify-self-end">82</span>
-        <span class="justify-self-end">98</span>
+        <div class="self-center"><h4><%= day["weekday"] %></h4></div>
+        <div class="justify-self-center h-14 w-14"><img src={day["description"]["image"]} /></div>
+        <div class="self-center justify-self-center"><span class="justify-self-end"><%= day["temperature"]["low"] %></span></div>
+        <div class="self-center justify-self-center"><span class="justify-self-end"><%= day["temperature"]["high"] %></span></div>
       </div>
     <% end %>
     """
