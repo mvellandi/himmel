@@ -22,24 +22,27 @@ defmodule HimmelWeb.PlacesLive do
         class="rounded-xl w-full bg-red-dark text-red-light placeholder-red-light p-2"
       />
       <%!-- SEARCH RESULT LIST --%>
-      <div id="places-search" class="hidden">SEARCH RESULTS</div>
+      <div id="places-search" class="hidden">
+        <ul>
+          <%= @data.search_results |> Enum.with_index |> Enum.map(fn({result, index}) -> %>
+            <a phx-click={nil}><li id={"result-#{index}"}><%= result %></li></a>
+          <% end) %>
+        </ul>
+      </div>
       <%!-- PLACES LIST --%>
-      <div id="places-list" class="flex flex-col gap-3">
+      <div id="places-list" class="flex flex-col space-y-3">
         <%!-- MY LOCATION (CUSTOM SIZE) --%>
-        <div
-          id="myLocation"
-          class="flex justify-between items-center rounded-xl bg-red-dark py-3.5 px-4"
-        >
+        <div id="myLocation" class="flex justify-between items-center rounded-xl bg-red-dark py-3.5 px-4">
           <div class="flex flex-col">
             <h2 class="text-2xl font-bold leading-none">My Location</h2>
-            <h3 class="font-semibold">Phoenix</h3>
-            <h4 class="font-semibold pt-6">Sunny</h4>
+            <h3 class="font-semibold"><%= @data.my_location.place %></h3>
+            <h4 class="font-semibold pt-6"><%= @data.my_location.description %></h4>
           </div>
           <div class="flex flex-col h-full justify-between items-end">
-            <span class="text-5xl font-light leading-[0.9]">98&deg;</span>
+            <span class="text-5xl font-light leading-[0.9]"><%= @data.my_location.temperature %>&deg;</span>
             <div class="flex justify-end gap-5 font-semibold">
-              <h4>H: 100&deg;</h4>
-              <h4>L: 85&deg;</h4>
+              <h4>L: <%= @data.my_location.low %>&deg;</h4>
+              <h4>H: <%= @data.my_location.high %>&deg;</h4>
             </div>
           </div>
         </div>
@@ -55,75 +58,78 @@ defmodule HimmelWeb.PlacesLive do
   def get_places_weather() do
     [
       %{
-        name: "Bremen",
+        place: "Bremen",
         temperature: 65,
         description: "Sunny",
         high: 80,
         low: 58
       },
       %{
-        name: "San Francisco",
+        place: "San Francisco",
         temperature: 65,
         description: "Foggy",
         high: 70,
         low: 60
       },
       %{
-        name: "New York",
+        place: "New York",
         temperature: 75,
         description: "Cloudy",
         high: 80,
         low: 70
       },
       %{
-        name: "London",
+        place: "London",
         temperature: 55,
         description: "Rainy",
         high: 60,
         low: 50
       },
       %{
-        name: "Tokyo",
+        place: "Tokyo",
         temperature: 75,
         description: "Sunny",
         high: 80,
         low: 70
       },
       %{
-        name: "Sydney",
+        place: "Sydney",
         temperature: 75,
         description: "Sunny",
         high: 80,
         low: 70
       },
       %{
-        name: "Rio de Janeiro",
+        place: "Rio de Janeiro",
         temperature: 75,
         description: "Sunny",
         high: 80,
         low: 70
       },
       %{
-        name: "Cape Town",
+        place: "Cape Town",
         temperature: 75,
         description: "Sunny",
         high: 80,
         low: 70
       },
       %{
-        name: "Moscow",
+        place: "Moscow",
         temperature: 75,
         description: "Sunny",
         high: 80,
         low: 70
       },
       %{
-        name: "Beijing",
+        place: "Beijing",
         temperature: 75,
         description: "Sunny",
         high: 80,
         low: 70
       }
     ]
+  end
+
+  def handle_event("add_place", unsigned_params, socket) do
   end
 end
