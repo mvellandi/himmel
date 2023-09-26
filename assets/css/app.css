@@ -44,4 +44,12 @@ small {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* MAIN SCREEN */
+  .hour-scrollbar {
+    /* scrollbar-color: var(--red); */
+    scrollbar-color: red;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+  }
 }
