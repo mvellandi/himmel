@@ -45,11 +45,6 @@ defmodule HimmelWeb.MainLive do
     """
   end
 
-  # def hours_data do
-  #   numbered_hours = Enum.concat([11..23, 0..9])
-  #   ["Now" | Enum.map(numbered_hours, &to_string/1)]
-  # end
-
   def hours(assigns) do
     ~H"""
     <%= for hour <- @hours do %>
@@ -61,10 +56,6 @@ defmodule HimmelWeb.MainLive do
     <% end %>
     """
   end
-
-  # def days_data do
-  #   ["Today", "Wed", "Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed", "Thu"]
-  # end
 
   def days(assigns) do
     ~H"""
