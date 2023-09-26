@@ -9,9 +9,9 @@ defmodule HimmelWeb.MainLive do
     >
       <%!-- CURRENT --%>
       <div class="self-center justify-self-center w-full ">
-        <div class="flex justify-between w-full">
+        <div class="flex justify-center w-full">
           <%!-- <%= if length(parent.places) > 1 && "this isn't the first place" do %> --%>
-          <button>P</button>
+          <%!-- <button>P</button> --%>
           <%!-- <% end %> --%>
           <div class="flex flex-col items-center pt-16 pb-12">
             <h1 class="text-4xl"><%= @data.place %></h1>
@@ -26,7 +26,7 @@ defmodule HimmelWeb.MainLive do
             </div>
           </div>
           <%!-- <%= if length(parent.places) > 1 && "this isn't the last place" do %> --%>
-          <button>N</button>
+          <%!-- <button>N</button> --%>
           <%!-- <% end %> --%>
         </div>
       </div>
