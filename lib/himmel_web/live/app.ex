@@ -26,8 +26,9 @@ defmodule HimmelWeb.AppLive do
          place: weather["place"],
          temperature: weather["current"]["temperature"],
          description: weather["current"]["description"]["text"],
-         high: hd(weather["daily"])["temperature"]["high"],
-         low: hd(weather["daily"])["temperature"]["low"],
+         #  high: hd(weather["daily"])["temperature"]["high"],
+         high: List.first(weather["daily"])["temperature"]["high"],
+         low: List.first(weather["daily"])["temperature"]["low"],
          hours: weather["hourly"],
          days: weather["daily"]
        },
@@ -90,7 +91,7 @@ defmodule HimmelWeb.AppLive do
           id="settings"
           screen={@screen}
           data={@settings}
-          current_user={assigns[:current_user]}
+          current_user={assigns.current_user}
         />
       </div>
     </main>
