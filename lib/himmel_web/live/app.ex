@@ -19,23 +19,29 @@ defmodule HimmelWeb.AppLive do
         Weather.get_weather_from_ip(socket)
       end
 
+    my_location = %{
+      place: weather["place"],
+      temperature: weather["current"]["temperature"],
+      description: weather["current"]["description"]["text"],
+      high: List.first(weather["daily"])["temperature"]["high"],
+      low: List.first(weather["daily"])["temperature"]["low"]
+    }
+
     {:ok,
      assign(socket,
        #  socket.assigns.current_user will be here
        main: %{
-         place: weather["place"],
-         temperature: weather["current"]["temperature"],
-         description: weather["current"]["description"]["text"],
-         #  high: hd(weather["daily"])["temperature"]["high"],
-         high: List.first(weather["daily"])["temperature"]["high"],
-         low: List.first(weather["daily"])["temperature"]["low"],
+         place: my_location.place,
+         temperature: my_location.temperature,
+         description: my_location.description,
+         high: my_location.high,
+         low: my_location.low,
          hours: weather["hourly"],
          days: weather["daily"]
        },
        places: %{
-         places: PlacesLive.get_places_weather(),
-         api: "https://api.weather.gov/points/33.4484,-112.0740",
-         user: nil
+         my_location: my_location,
+         places: PlacesLive.get_places_weather()
        },
        settings: %{
          temperature_scale: :celsius
