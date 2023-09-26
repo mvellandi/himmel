@@ -23,11 +23,12 @@ defmodule HimmelWeb.PlacesLive do
       />
       <%!-- SEARCH RESULT LIST --%>
       <div id="places-search" class="hidden">
-        <ul>
+      <%!-- # TODO: add search result click attribute and event handler to add place to places list --%>
+        <%!-- <ul>
           <%= @data.search_results |> Enum.with_index |> Enum.map(fn({result, index}) -> %>
             <a phx-click={nil}><li id={"result-#{index}"}><%= result %></li></a>
           <% end) %>
-        </ul>
+        </ul> --%>
       </div>
       <%!-- PLACES LIST --%>
       <div id="places-list" class="flex flex-col space-y-3">
@@ -47,6 +48,8 @@ defmodule HimmelWeb.PlacesLive do
           </div>
         </div>
         <%!-- SAVED PLACES --%>
+        <%!-- # TODO: add "load place" click attribute to card, and event handler to show weather for that place in main --%>
+        <%!-- # TODO: add "delete place" click attribute to button, and event handler to show weather for that place in main --%>
         <%= @data.places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
           <.place_card id={"placeCard-#{index}"} data={place} />
         <% end) %>
