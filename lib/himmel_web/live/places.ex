@@ -44,9 +44,9 @@ defmodule HimmelWeb.PlacesLive do
           </div>
         </div>
         <%!-- SAVED PLACES --%>
-        <%= for place <- @data.places, idx <- 1..length(@data.places) do %>
-          <.place_card id={"placeCard-#{idx}"} data={place} />
-        <% end %>
+        <%= @data.places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
+          <.place_card id={"placeCard-#{index}"} data={place} />
+        <% end) %>
       </div>
     </div>
     """
