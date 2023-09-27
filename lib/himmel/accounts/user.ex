@@ -1,5 +1,6 @@
 defmodule Himmel.Accounts.User do
   use Ecto.Schema
+  alias Himmel.Places.Place
   import Ecto.Changeset
 
   schema "user" do
@@ -7,6 +8,8 @@ defmodule Himmel.Accounts.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
+
+    many_to_many :places, Place, join_through: "places_users"
 
     timestamps()
   end
