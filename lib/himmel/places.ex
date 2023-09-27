@@ -1,28 +1,104 @@
 defmodule Himmel.Places do
-  import Phoenix.LiveView, only: [get_connect_info: 2]
-  import Himmel.Utils
-  alias :ipinfo, as: IPinfo
+  @moduledoc """
+  The Places context.
+  """
 
-  @doc "Gets the IP of the requesting client"
-  def get_user_ip(socket) do
-    peer_data = get_connect_info(socket, :peer_data)
-    peer_data.address |> :inet.ntoa() |> to_string()
+  import Ecto.Query, warn: false
+  alias Himmel.Repo
+
+  alias Himmel.Places.Place
+
+  @doc """
+  Returns the list of places.
+
+  ## Examples
+
+      iex> list_places()
+      [%Place{}, ...]
+
+  """
+  def list_places do
+    Repo.all(Place)
   end
 
-  @doc "Gets the coordinates and city from an IP address"
-  def get_ip_details(ip) do
-    with {:ok, %IPinfo{} = handler} <- IPinfo.create(Dotenv.get("IPINFO_TOKEN")),
-         {:ok, details} <- IPinfo.details(handler, ip) do
-      details
-    end
+  @doc """
+  Gets a single place.
+
+  Raises `Ecto.NoResultsError` if the Place does not exist.
+
+  ## Examples
+
+      iex> get_place!(123)
+      %Place{}
+
+      iex> get_place!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_place!(id), do: Repo.get!(Place, id)
+
+  @doc """
+  Creates a place.
+
+  ## Examples
+
+      iex> create_place(%{field: value})
+      {:ok, %Place{}}
+
+      iex> create_place(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_place(attrs \\ %{}) do
+    %Place{}
+    |> Place.changeset(attrs)
+    |> Repo.insert()
   end
 
-  @doc "Gets a list of search results for a place"
-  def find_place(place) when is_binary(place) do
-    name = String.split(place) |> Enum.join("+")
+  @doc """
+  Updates a place.
 
-    ("https://geocoding-api.open-meteo.com/v1/search?count=20&language=en&format=json&" <>
-       "name=#{name}")
-    |> json_request()
+  ## Examples
+
+      iex> update_place(place, %{field: new_value})
+      {:ok, %Place{}}
+
+      iex> update_place(place, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_place(%Place{} = place, attrs) do
+    place
+    |> Place.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a place.
+
+  ## Examples
+
+      iex> delete_place(place)
+      {:ok, %Place{}}
+
+      iex> delete_place(place)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_place(%Place{} = place) do
+    Repo.delete(place)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking place changes.
+
+  ## Examples
+
+      iex> change_place(place)
+      %Ecto.Changeset{data: %Place{}}
+
+  """
+  def change_place(%Place{} = place, attrs \\ %{}) do
+    Place.changeset(place, attrs)
   end
 end
