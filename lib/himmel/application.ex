@@ -17,9 +17,10 @@ defmodule Himmel.Application do
       # Start Finch
       {Finch, name: Himmel.Finch},
       # Start the Endpoint (http/https)
-      HimmelWeb.Endpoint
+      HimmelWeb.Endpoint,
       # Start a worker by calling: Himmel.Worker.start_link(arg)
       # {Himmel.Worker, arg}
+      {Himmel.Weather.Service, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
