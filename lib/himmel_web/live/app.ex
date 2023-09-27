@@ -41,7 +41,9 @@ defmodule HimmelWeb.AppLive do
        },
        places: %{
          my_location: my_location,
-         places: PlacesLive.get_places_weather()
+         search: "",
+         search_results: [],
+         saved_places: []
        },
        settings: %{
          temperature_scale: :celsius
