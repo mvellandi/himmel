@@ -1,6 +1,14 @@
 defmodule HimmelWeb.PlacesLive do
   use HimmelWeb, :live_component
+  alias Himmel.Services.Geocoding
   import HimmelWeb.WeatherComponents
+
+  def update(assigns, socket) do
+    {:ok,
+     socket
+     |> assign(assigns)
+     |> assign(search: "", search_results: [], saved_places: [])}
+  end
 
   def render(assigns) do
     ~H"""
@@ -10,25 +18,34 @@ defmodule HimmelWeb.PlacesLive do
     >
       <h1 class="text-4xl font-bold">Places</h1>
       <%!-- SEARCH --%>
-      <%!-- option: phx-blur or phx-focus could trigger an event handler, which
-      could control some value in state, --%>
-      <%!-- <button phx-click={JS.push("inc", loading: ".thermo", target: @myself) |> JS.add_class("warmer", to: ".thermo")}>+</button> --%>
-      <%!-- <button phx-blur={JS.hide(to: "#") |> JS.show(to: "#")}>+</button> --%>
-      <input
-        type="text"
-        phx-focus={JS.hide(to: "#places-list") |> JS.show(to: "#places-search")}
-        phx-blur={JS.show(to: "#places-list") |> JS.hide(to: "#places-search")}
-        placeholder="Search for a city or airport"
-        class="rounded-xl w-full bg-red-dark text-red-light placeholder-red-light p-2"
-      />
+      <%!-- phx-focus={JS.hide(to: "#places-list") |> JS.show(to: "#search-results")}
+          phx-blur={JS.show(to: "#places-list") |> JS.hide(to: "#search-results")} --%>
+      <form phx-submit="search" phx-target={@myself} class="inline-flex items-center justify-between w-full h-10 rounded-xl bg-red-dark text-red-light py-2 pl-4">
+        <input
+          type="text"
+          name="place"
+          value={@search}
+          placeholder="Search for a city or place"
+          autocomplete="off"
+          phx-debounce="200"
+          class="w-full bg-transparent placeholder-red-light"
+        />
+        <button class="px-4 transition ease-in-out duration-150 outline-none">
+          <.icon_loupe />
+        </button>
+      </form>
       <%!-- SEARCH RESULT LIST --%>
-      <div id="places-search" class="hidden">
-      <%!-- # TODO: add search result click attribute and event handler to add place to places list --%>
-        <%!-- <ul>
-          <%= @data.search_results |> Enum.with_index |> Enum.map(fn({result, index}) -> %>
-            <a phx-click={nil}><li id={"result-#{index}"}><%= result %></li></a>
+      <div id="search-results" class="">
+        <ul>
+          <%= @search_results |> Enum.with_index |> Enum.map(fn({result, index}) -> %>
+            <li id={"result-#{index}"} phx-target={@myself} phx-click="add_place" phx-value-place_id={result["provider_place_id"]} >
+                <div>
+                  <h2 class="text-2xl font-bold"><%= result["name"] %></h2>
+                  <h3 class="font-semibold"><%= result["region"] %>, <%= result["country"] %></h3>
+                </div>
+            </li>
           <% end) %>
-        </ul> --%>
+        </ul>
       </div>
       <%!-- PLACES LIST --%>
       <div id="places-list" class="flex flex-col space-y-3">
@@ -36,26 +53,54 @@ defmodule HimmelWeb.PlacesLive do
         <div id="myLocation" class="flex justify-between items-center rounded-xl bg-red-dark py-3.5 px-4">
           <div class="flex flex-col">
             <h2 class="text-2xl font-bold leading-none">My Location</h2>
-            <h3 class="font-semibold"><%= @data.my_location.place %></h3>
-            <h4 class="font-semibold pt-6"><%= @data.my_location.description %></h4>
+            <h3 class="font-semibold"><%= @my_location.place %></h3>
+            <h4 class="font-semibold pt-6"><%= @my_location.description_text %></h4>
           </div>
           <div class="flex flex-col h-full justify-between items-end">
-            <span class="text-5xl font-light leading-[0.9]"><%= @data.my_location.temperature %>&deg;</span>
+            <span class="text-5xl font-light leading-[0.9]"><%= @my_location.temperature %>&deg;</span>
             <div class="flex justify-end gap-5 font-semibold">
-              <h4>L: <%= @data.my_location.low %>&deg;</h4>
-              <h4>H: <%= @data.my_location.high %>&deg;</h4>
+              <h4>L: <%= @my_location.low %>&deg;</h4>
+              <h4>H: <%= @my_location.high %>&deg;</h4>
             </div>
           </div>
         </div>
         <%!-- SAVED PLACES --%>
         <%!-- # TODO: add "load place" click attribute to card, and event handler to show weather for that place in main --%>
         <%!-- # TODO: add "delete place" click attribute to button, and event handler to show weather for that place in main --%>
-        <%= @data.places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
-          <.place_card id={"placeCard-#{index}"} data={place} />
+        <%= @saved_places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
+          <.place_card id={"placeCard-#{index}"} place={place} />
         <% end) %>
       </div>
     </div>
     """
+  end
+
+  def handle_event("search", %{"place" => place}, socket) do
+    socket =
+      assign(socket,
+        search: place,
+        search_results: Geocoding.find_place(place)
+      )
+
+    {:noreply, socket}
+  end
+
+  def handle_event("add_place", %{"place_id" => place_id}, socket) do
+    # TODO: if user is authd, add place in DB
+    # TODO: get weather for place
+    place =
+      Enum.find(socket.assigns.search_results, fn result ->
+        result["provider_place_id"] == place_id
+      end)
+
+    socket =
+      assign(socket,
+        search: "",
+        search_results: [],
+        saved_places: [place | socket.assigns.saved_places]
+      )
+
+    {:noreply, socket}
   end
 
   def get_places_weather() do
@@ -133,6 +178,9 @@ defmodule HimmelWeb.PlacesLive do
     ]
   end
 
-  def handle_event("add_place", unsigned_params, socket) do
+  def icon_loupe(assigns) do
+    ~H"""
+    <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mx-auto"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607z"/></svg>
+    """
   end
 end

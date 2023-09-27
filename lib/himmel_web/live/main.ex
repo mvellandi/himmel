@@ -31,7 +31,10 @@ defmodule HimmelWeb.MainLive do
         </div>
       </div>
       <%!-- TODAY --%>
-      <div id="hours" class="relative flex gap-2 rounded-xl p-4 bg-red-dark overflow-x-auto whitespace-nowrap">
+      <div
+        id="hours"
+        class="relative flex gap-2 rounded-xl p-4 bg-red-dark overflow-x-auto whitespace-nowrap"
+      >
         <%!-- HOUR COLUMNS --%>
         <.hours hours={@data.hours} />
       </div>
@@ -62,10 +65,16 @@ defmodule HimmelWeb.MainLive do
     <%= for day <- @days do %>
       <%!-- <div class="flex justify-between text-2xl"> --%>
       <div class="grid grid-cols-4 text-2xl">
-        <div class="self-center"><h4><%= day["weekday"] %></h4></div>
+        <div class="self-center">
+          <h4><%= day["weekday"] %></h4>
+        </div>
         <div class="justify-self-center h-14 w-14"><img src={day["description"]["image"]} /></div>
-        <div class="self-center justify-self-center"><span class="justify-self-end"><%= day["temperature"]["low"] %></span></div>
-        <div class="self-center justify-self-center"><span class="justify-self-end"><%= day["temperature"]["high"] %></span></div>
+        <div class="self-center justify-self-center">
+          <span class="justify-self-end"><%= day["temperature"]["low"] %></span>
+        </div>
+        <div class="self-center justify-self-center">
+          <span class="justify-self-end"><%= day["temperature"]["high"] %></span>
+        </div>
       </div>
     <% end %>
     """

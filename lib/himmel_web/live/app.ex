@@ -41,9 +41,7 @@ defmodule HimmelWeb.AppLive do
        },
        places: %{
          my_location: my_location,
-         search: "",
-         search_results: [],
-         saved_places: []
+         current_user: user
        },
        settings: %{
          temperature_scale: :celsius
@@ -91,11 +89,15 @@ defmodule HimmelWeb.AppLive do
         <%!-- MAIN --%>
         <.live_component module={MainLive} , id="main" screen={@screen} data={@main} />
         <%!-- PLACES --%>
-        <.live_component module={PlacesLive} , id="places" screen={@screen} data={@places} />
+        <.live_component
+          module={PlacesLive}
+          id="places"
+          screen={@screen}
+          my_location={@places.my_location}
+        />
         <%!-- SETTINGS --%>
         <.live_component
           module={SettingsLive}
-          ,
           id="settings"
           screen={@screen}
           data={@settings}
