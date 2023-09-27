@@ -35,21 +35,18 @@ small {
   }
 }
 
-/* SCROLLBAR HIDE */
-@layer utilities {
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  /* MAIN SCREEN */
-  .hour-scrollbar {
-    /* scrollbar-color: var(--red); */
-    scrollbar-color: red;
-    scrollbar-gutter: stable;
-    scrollbar-width: thin;
-  }
+body,
+#hours {
+  scrollbar-color: hsl(346deg 61% 36%) hsl(346deg 100% 19%);
+  scrollbar-width: thin;
+}
+body::-webkit-scrollbar,
+#hours::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+body::-webkit-scrollbar-thumb,
+#hours::-webkit-scrollbar-thumb {
+  background-color: hsl(346deg 61% 70%);
+  border-radius: 5px;
 }
