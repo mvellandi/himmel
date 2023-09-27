@@ -93,11 +93,27 @@ defmodule HimmelWeb.PlacesLive do
         result["provider_place_id"] == place_id
       end)
 
+    weather =
+      Himmel.Weather.Service.get_weather(
+        %{longitude: place["longitude"], latitude: place["latitude"]},
+        place["name"]
+      )
+
+    saved_place = %{
+      "name" => weather["place"],
+      "description" => weather["current"]["description"]["text"],
+      "temperature" => weather["current"]["temperature"],
+      "high" => hd(weather["daily"])["temperature"]["high"],
+      "low" => hd(weather["daily"])["temperature"]["low"]
+    }
+
+    # send(self(), {:set_current_weather, saved_place})
+
     socket =
       assign(socket,
         search: "",
         search_results: [],
-        saved_places: [place | socket.assigns.saved_places]
+        saved_places: [saved_place | socket.assigns.saved_places]
       )
 
     {:noreply, socket}

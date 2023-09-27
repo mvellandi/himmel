@@ -94,6 +94,7 @@ defmodule HimmelWeb.AppLive do
           id="places"
           screen={@screen}
           my_location={@places.my_location}
+          current_user={assigns.current_user}
         />
         <%!-- SETTINGS --%>
         <.live_component

@@ -33,12 +33,12 @@ defmodule Himmel.Weather do
     |> Utils.json_request()
   end
 
-  def get_weather(%{latitude: latitude, longitude: longitude}, place) do
+  def get_weather(%{latitude: latitude, longitude: longitude}, place_name) do
     ("https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&current_weather=true&forecast_days=10&timezone=auto&" <>
        "latitude=#{latitude}&" <>
        "longitude=#{longitude}")
     |> Utils.json_request()
-    |> Map.put("place", place)
+    |> Map.put("place", place_name)
     |> prepare_current_weather()
     |> prepare_daily_weather()
     |> prepare_hourly_weather(36)
