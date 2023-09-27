@@ -1,6 +1,6 @@
 defmodule Himmel.Places do
   @moduledoc """
-  The Places context.
+  The Places context..
   """
 
   import Ecto.Query, warn: false
