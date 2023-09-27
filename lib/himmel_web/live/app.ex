@@ -22,7 +22,7 @@ defmodule HimmelWeb.AppLive do
     my_location = %{
       place: weather["place"],
       temperature: weather["current"]["temperature"],
-      description: weather["current"]["description"]["text"],
+      description_text: weather["current"]["description"]["text"],
       high: List.first(weather["daily"])["temperature"]["high"],
       low: List.first(weather["daily"])["temperature"]["low"]
     }
@@ -33,7 +33,7 @@ defmodule HimmelWeb.AppLive do
        main: %{
          place: my_location.place,
          temperature: my_location.temperature,
-         description: my_location.description,
+         description_text: my_location.description_text,
          high: my_location.high,
          low: my_location.low,
          hours: weather["hourly"],

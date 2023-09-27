@@ -19,7 +19,7 @@ defmodule HimmelWeb.MainLive do
               <%= @data.temperature %>
               <span class="relative"><span class="absolute">&deg;</span></span>
             </h2>
-            <h3 class="text-2xl"><%= @data.description %></h3>
+            <h3 class="text-2xl"><%= @data.description_text %></h3>
             <div class="flex justify-between gap-5 text-2xl">
               <h4>L: <%= @data.low %>&deg;</h4>
               <h4>H: <%= @data.high %>&deg;</h4>
@@ -31,7 +31,7 @@ defmodule HimmelWeb.MainLive do
         </div>
       </div>
       <%!-- TODAY --%>
-      <div class="relative flex gap-2 rounded-xl p-4 bg-red-dark overflow-x-auto whitespace-nowrap hour-scrollbar">
+      <div id="hours" class="relative flex gap-2 rounded-xl p-4 bg-red-dark overflow-x-auto whitespace-nowrap">
         <%!-- HOUR COLUMNS --%>
         <.hours hours={@data.hours} />
       </div>
