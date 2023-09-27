@@ -1,5 +1,6 @@
 defmodule Himmel.Weather do
-  alias Himmel.{Places, Utils}
+  alias Himmel.Utils
+  alias Himmel.Services.IP
   alias Himmel.Weather.Descriptions
 
   @weather_keys [
@@ -13,8 +14,8 @@ defmodule Himmel.Weather do
   def get_weather_from_ip(socket) do
     details =
       socket
-      |> Places.get_user_ip()
-      |> Places.get_ip_details()
+      |> IP.get_user_ip()
+      |> IP.get_ip_details()
 
     place = details |> Map.get("city")
     coordinates = Map.take(details, ["latitude", "longitude"])
