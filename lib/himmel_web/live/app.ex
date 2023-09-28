@@ -1,6 +1,7 @@
 defmodule HimmelWeb.AppLive do
   use HimmelWeb, :live_view
-  alias Himmel.Weather
+  alias Himmel.Services.Weather
+  alias Himmel.Places.Place
   alias HimmelWeb.{MainLive, PlacesLive, SettingsLive}
 
   @doc """
@@ -10,42 +11,24 @@ defmodule HimmelWeb.AppLive do
   def mount(_params, _session, socket) do
     user = false
 
-    weather =
+    # if connected?(socket) do
+    #   HimmelWeb.Endpoint.subscribe("places")
+    # end
+
+    place_weather =
       if user do
-        # TODO: get user's last loaded place
+        # TODO: get user's last loaded place instead of IP, and have the Weather manager get the weather for that place
         Weather.get_weather_from_ip(socket)
       else
         # get current weather from user's IP
         Weather.get_weather_from_ip(socket)
       end
 
-    my_location = %{
-      place: weather["place"],
-      temperature: weather["current"]["temperature"],
-      description_text: weather["current"]["description"]["text"],
-      high: List.first(weather["daily"])["temperature"]["high"],
-      low: List.first(weather["daily"])["temperature"]["low"]
-    }
+    main_weather = prepare_main_weather(place_weather)
 
     {:ok,
      assign(socket,
-       #  socket.assigns.current_user will be here
-       main: %{
-         place: my_location.place,
-         temperature: my_location.temperature,
-         description_text: my_location.description_text,
-         high: my_location.high,
-         low: my_location.low,
-         hours: weather["hourly"],
-         days: weather["daily"]
-       },
-       places: %{
-         my_location: my_location,
-         current_user: user
-       },
-       settings: %{
-         temperature_scale: :celsius
-       },
+       my_location: main_weather,
        screen: :main
      )}
   end
@@ -87,13 +70,13 @@ defmodule HimmelWeb.AppLive do
       <%!-- =< 1280px: ALL @SCREEN SHOWN IN A SINGLE ROW --%>
       <div class="flex justify-center gap-10">
         <%!-- MAIN --%>
-        <.live_component module={MainLive} , id="main" screen={@screen} data={@main} />
+        <.live_component module={MainLive} id="main" screen={@screen} my_location={@my_location} />
         <%!-- PLACES --%>
         <.live_component
           module={PlacesLive}
           id="places"
           screen={@screen}
-          my_location={@places.my_location}
+          my_location={@my_location}
           current_user={assigns.current_user}
         />
         <%!-- SETTINGS --%>
@@ -101,7 +84,6 @@ defmodule HimmelWeb.AppLive do
           module={SettingsLive}
           id="settings"
           screen={@screen}
-          data={@settings}
           current_user={assigns.current_user}
         />
       </div>
@@ -117,5 +99,25 @@ defmodule HimmelWeb.AppLive do
   def handle_event("places", _, socket) do
     screen = if socket.assigns.screen == :places, do: :main, else: :places
     {:noreply, assign(socket, screen: screen)}
+  end
+
+  # def handle_event(%Phoenix.PubSub.Broadcast{}) do
+  # end
+
+  def handle_info({:set_main_weather, place}, socket) do
+    main_weather = prepare_main_weather(place)
+    {:noreply, assign(socket, my_location: main_weather)}
+  end
+
+  def prepare_main_weather(%Place{name: name, weather: weather}) do
+    %{
+      name: name,
+      temperature: weather.current.temperature,
+      description_text: weather.current.description.text,
+      high: List.first(weather.daily)[:temperature].high,
+      low: List.first(weather.daily)[:temperature].low,
+      hours: weather.hourly,
+      days: weather.daily
+    }
   end
 end
