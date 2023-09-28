@@ -4,8 +4,7 @@ defmodule Himmel.Repo.Migrations.CreatePlaces do
   def change do
     create table(:places) do
       add :name, :string
-      add :latitude, :float
-      add :longitude, :float
+      add :coordinates, :map
 
       timestamps()
     end
