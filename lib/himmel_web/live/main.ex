@@ -14,15 +14,15 @@ defmodule HimmelWeb.MainLive do
           <%!-- <button>P</button> --%>
           <%!-- <% end %> --%>
           <div class="flex flex-col items-center pt-16 pb-12">
-            <h1 class="text-4xl"><%= @data.place %></h1>
+            <h1 class="text-4xl"><%= @my_location.name %></h1>
             <h2 class="text-8xl py-1 font-extralight">
-              <%= @data.temperature %>
+              <%= @my_location.temperature %>
               <span class="relative"><span class="absolute">&deg;</span></span>
             </h2>
-            <h3 class="text-2xl"><%= @data.description_text %></h3>
+            <h3 class="text-2xl"><%= @my_location.description_text %></h3>
             <div class="flex justify-between gap-5 text-2xl">
-              <h4>L: <%= @data.low %>&deg;</h4>
-              <h4>H: <%= @data.high %>&deg;</h4>
+              <h4>L: <%= @my_location.low %>&deg;</h4>
+              <h4>H: <%= @my_location.high %>&deg;</h4>
             </div>
           </div>
           <%!-- <%= if length(parent.places) > 1 && "this isn't the last place" do %> --%>
@@ -36,13 +36,13 @@ defmodule HimmelWeb.MainLive do
         class="relative flex gap-2 rounded-xl p-4 bg-red-dark overflow-x-auto whitespace-nowrap"
       >
         <%!-- HOUR COLUMNS --%>
-        <.hours hours={@data.hours} />
+        <.hours hours={@my_location.hours} />
       </div>
       <%!-- 10-DAYS --%>
       <div class="flex flex-col rounded-xl pt-2 pb-4 px-4 bg-red-dark">
         <h3 class="uppercase text-red-medium text-[1.1rem]">Icon 10-Day Forecast</h3>
         <%!-- DAY ROWS --%>
-        <.days days={@data.days} />
+        <.days days={@my_location.days} />
       </div>
     </div>
     """
@@ -50,11 +50,11 @@ defmodule HimmelWeb.MainLive do
 
   def hours(assigns) do
     ~H"""
-    <%= for hour <- @hours do %>
+    <%= for time <- @hours do %>
       <div class="flex flex-col items-center">
-        <h3 class="text-xl"><%= hour["hour"] %></h3>
-        <div class="h-12 w-12"><img src={hour["description"]["image"]} /></div>
-        <span class="text-2xl"><%= hour["temperature"] %></span>
+        <h3 class="text-xl"><%= time.hour %></h3>
+        <div class="h-12 w-12"><img src={time.description.image} /></div>
+        <span class="text-2xl"><%= time.temperature %></span>
       </div>
     <% end %>
     """
@@ -66,14 +66,14 @@ defmodule HimmelWeb.MainLive do
       <%!-- <div class="flex justify-between text-2xl"> --%>
       <div class="grid grid-cols-4 text-2xl">
         <div class="self-center">
-          <h4><%= day["weekday"] %></h4>
+          <h4><%= day.weekday %></h4>
         </div>
-        <div class="justify-self-center h-14 w-14"><img src={day["description"]["image"]} /></div>
+        <div class="justify-self-center h-14 w-14"><img src={day.description.image} /></div>
         <div class="self-center justify-self-center">
-          <span class="justify-self-end"><%= day["temperature"]["low"] %></span>
+          <span class="justify-self-end"><%= day.temperature.low %></span>
         </div>
         <div class="self-center justify-self-center">
-          <span class="justify-self-end"><%= day["temperature"]["high"] %></span>
+          <span class="justify-self-end"><%= day.temperature.high %></span>
         </div>
       </div>
     <% end %>
