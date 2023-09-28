@@ -26,11 +26,12 @@ defmodule Himmel.Utils do
     DateTime.new(date, time, weather["timezone"]) |> elem(1)
   end
 
-  def meteo_datetime_to_hour_string(datetime) when is_binary(datetime) do
+  def meteo_datetime_to_hour(datetime) when is_binary(datetime) do
     String.split(datetime, "T")
     |> List.last()
     |> String.split(":")
     |> List.first()
+    |> String.to_integer()
   end
 
   def weekday_name_from_date(time) when is_binary(time) do
@@ -62,8 +63,8 @@ defmodule Himmel.Utils do
 
   def is_day_or_night?(datetime, sunrise, sunset) do
     case datetime < sunrise || datetime > sunset do
-      true -> "night"
-      false -> "day"
+      true -> :night
+      false -> :day
     end
   end
 
