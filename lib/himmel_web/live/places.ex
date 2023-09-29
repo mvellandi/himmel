@@ -2,7 +2,7 @@ defmodule HimmelWeb.PlacesLive do
   use HimmelWeb, :live_component
   alias Himmel.Services
   alias Himmel.Weather
-  alias Himmel.Places.{Place, Coordinates, PlaceView}
+  alias Himmel.Places
 
   def update(assigns, socket) do
     {:ok,
@@ -90,7 +90,8 @@ defmodule HimmelWeb.PlacesLive do
   def handle_event("add_place", %{"id" => id}, socket) do
     place_with_weather =
       get_place_from_search_results(id, socket)
-      |> Weather.Manager.get_weather()
+      |> Places.create_place_view_from_search_result()
+      |> Weather.get_weather()
 
     # TODO: if user is authd, see if place is in DB, if not, save it, then save place in memory
     # new function somewhere
@@ -108,7 +109,7 @@ defmodule HimmelWeb.PlacesLive do
     {:noreply, socket}
   end
 
-  def handle_event("remove_place", %{"place_id" => _place_id}, socket) do
+  def handle_event("remove_place", %{"id" => _id}, socket) do
     # place = get_place_in_memory(socket, :saved_places, place_id)
     # updated_places = Enum.reject(socket.assigns.saved_places, fn p -> p["id"] == place_id end)
     {:noreply, socket}
@@ -120,7 +121,7 @@ defmodule HimmelWeb.PlacesLive do
       <div class="flex flex-col">
         <h2 class="text-2xl font-bold leading-none"><%= @place.name %></h2>
         <h3 class="font-semibold pb-4"><%= @place.weather.current.description.text %></h3>
-        <button class="cursor-pointer text-red-light text-left h-6 w-6" phx-click="remove_place" phx-value-place_id={coordinates_to_id(@place.coordinates)}><.icon_trash /></button>
+        <button class="cursor-pointer text-red-light text-left h-6 w-6" phx-click="remove_place" phx-value-id={@place.id}><.icon_trash /></button>
       </div>
       <div class="flex flex-col h-full justify-between items-end">
         <span class="text-5xl font-light leading-[0.9]"><%= @place.weather.current.temperature %>&deg;</span>
@@ -146,21 +147,8 @@ defmodule HimmelWeb.PlacesLive do
   end
 
   def get_place_from_search_results(place_id, socket) do
-    place =
-      Enum.find(socket.assigns[:search_results], fn result ->
-        result.id == String.to_integer(place_id)
-      end)
-
-    %Place{
-      name: place.name,
-      coordinates: %Coordinates{
-        latitude: place.latitude,
-        longitude: place.longitude
-      }
-    }
-  end
-
-  def coordinates_to_id(%Coordinates{latitude: latitude, longitude: longitude}) do
-    (latitude + longitude) |> Float.to_string() |> String.replace(".", "")
+    Enum.find(socket.assigns[:search_results], fn result ->
+      result.id == String.to_integer(place_id)
+    end)
   end
 end
