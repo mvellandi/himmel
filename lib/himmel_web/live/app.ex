@@ -1,7 +1,8 @@
 defmodule HimmelWeb.AppLive do
   use HimmelWeb, :live_view
-  alias Himmel.Services.Weather
-  alias Himmel.Places.Place
+  alias Himmel.Weather
+  alias Himmel.Places
+  alias Himmel.Places.PlaceView
   alias HimmelWeb.{MainLive, PlacesLive, SettingsLive}
 
   @doc """
@@ -9,19 +10,19 @@ defmodule HimmelWeb.AppLive do
   the last loaded place is shown. Otherwise, the user's IP is used to get the current place and weather.
   """
   def mount(_params, _session, socket) do
-    user = false
-
     # if connected?(socket) do
     #   HimmelWeb.Endpoint.subscribe("places")
     # end
 
     place_weather =
-      if user do
-        # TODO: get user's last loaded place instead of IP, and have the Weather manager get the weather for that place
-        Weather.get_weather_from_ip(socket)
+      if socket.assigns.current_user do
+        # TODO: get user's last loaded place instead of IP, and have the Weather genserver get the weather for that place, user's location, and user's other saved places
+        Places.create_place_view_from_socket(socket)
+        |> Weather.get_weather()
       else
         # get current weather from user's IP
-        Weather.get_weather_from_ip(socket)
+        Places.create_place_view_from_socket(socket)
+        |> Weather.get_weather()
       end
 
     main_weather = prepare_main_weather(place_weather)
@@ -109,7 +110,7 @@ defmodule HimmelWeb.AppLive do
     {:noreply, assign(socket, my_location: main_weather)}
   end
 
-  def prepare_main_weather(%Place{name: name, weather: weather}) do
+  def prepare_main_weather(%PlaceView{name: name, weather: weather}) do
     %{
       name: name,
       temperature: weather.current.temperature,
