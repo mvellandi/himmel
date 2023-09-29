@@ -40,7 +40,7 @@ defmodule HimmelWeb.MainLive do
       </div>
       <%!-- 10-DAYS --%>
       <div class="flex flex-col rounded-xl pt-2 pb-4 px-4 bg-red-dark">
-        <h3 class="uppercase text-red-medium text-[1.1rem]">Icon 10-Day Forecast</h3>
+        <h3 class="uppercase text-red-medium text-[1.1rem]">10-Day Forecast</h3>
         <%!-- DAY ROWS --%>
         <.days days={@main_weather.days} />
       </div>
