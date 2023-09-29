@@ -1,42 +1,14 @@
 defmodule Himmel.Services.Weather do
   alias Himmel.Utils
-  alias Himmel.Services.IP
   alias Himmel.Weather.Descriptions
-  alias Himmel.Places.{Place, Coordinates}
+  alias Himmel.Places.{PlaceView, Coordinates}
 
   @weather_keys [
     :current,
     :daily,
     :hourly,
-    :timestamp
+    :last_updated
   ]
-
-  def get_weather_from_ip(socket) do
-    details =
-      socket
-      |> IP.get_user_ip()
-      |> IP.get_ip_details()
-
-    name = details |> Map.get(:city)
-
-    coordinates = %Coordinates{
-      latitude: details[:latitude],
-      longitude: details[:longitude]
-    }
-
-    hamburg = %Place{
-      name: "Hamburg",
-      coordinates: %Coordinates{
-        latitude: 5.5488,
-        longitude: 9.9872
-      }
-    }
-
-    case Mix.env() do
-      :dev -> get_weather(hamburg)
-      :prod -> get_weather(%Place{name: name, coordinates: coordinates})
-    end
-  end
 
   def get_raw_weather_hamburg() do
     ("https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&current_weather=true&forecast_days=10&timezone=auto&" <>
@@ -46,8 +18,7 @@ defmodule Himmel.Services.Weather do
   end
 
   def get_weather(
-        %Place{
-          name: _name,
+        %PlaceView{
           coordinates: %Coordinates{latitude: latitude, longitude: longitude}
         } = place
       ) do
