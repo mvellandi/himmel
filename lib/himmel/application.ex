@@ -20,7 +20,7 @@ defmodule Himmel.Application do
       HimmelWeb.Endpoint,
       # Start a worker by calling: Himmel.Worker.start_link(arg)
       # {Himmel.Worker, arg}
-      {Himmel.Weather.Manager, []}
+      {Himmel.Weather, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
