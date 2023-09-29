@@ -1,13 +1,13 @@
-defmodule Himmel.Weather.Manager do
+defmodule Himmel.Weather do
   use GenServer
   alias Himmel.Services
-  alias Himmel.Places.Place
+  alias Himmel.Places.PlaceView
 
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
   end
 
-  def get_weather(%Place{} = place) do
+  def get_weather(%PlaceView{} = place) do
     GenServer.call(__MODULE__, {:get, place})
   end
 
@@ -28,13 +28,13 @@ defmodule Himmel.Weather.Manager do
     {:noreply, state}
   end
 
-  def handle_call({:get, %Place{coordinates: coordinates} = place}, _from, state) do
-    case Map.get(state, coordinates) do
+  def handle_call({:get, %PlaceView{id: id} = place}, _from, state) do
+    case Map.get(state, id) do
       nil ->
         place_with_updated_weather = Services.Weather.get_weather(place)
+        new_state = Map.put(state, id, place_with_updated_weather)
 
-        {:reply, place_with_updated_weather,
-         Map.put(state, coordinates, place_with_updated_weather)}
+        {:reply, place_with_updated_weather, new_state}
 
       place_with_weather ->
         {:reply, place_with_weather, state}
