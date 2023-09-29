@@ -52,17 +52,17 @@ defmodule HimmelWeb.PlacesLive do
       <%!-- PLACES LIST --%>
       <div id="places-list" class="flex flex-col space-y-3">
         <%!-- MY LOCATION (CUSTOM SIZE) --%>
-        <div id="myLocation" class="flex justify-between items-center rounded-xl bg-red-dark py-3.5 px-4">
+        <div id="myLocation" phx-click="set_main_weather_to_my_location" class="flex justify-between items-center rounded-xl bg-red-dark py-3.5 px-4 cursor-pointer">
           <div class="flex flex-col">
             <h2 class="text-2xl font-bold leading-none">My Location</h2>
             <h3 class="font-semibold pb-4 pt-1"><%= @my_location.name %></h3>
-            <h4 class="font-semibold"><%= @my_location.description_text %></h4>
+            <h4 class="font-semibold"><%= @my_location.weather.current.description.text %></h4>
           </div>
           <div class="flex flex-col h-full justify-between items-end">
-            <span class="text-5xl font-light leading-[0.9]"><%= @my_location.temperature %>&deg;</span>
+            <span class="text-5xl font-light leading-[0.9]"><%= @my_location.weather.current.temperature %>&deg;</span>
             <div class="flex justify-end gap-5 font-semibold">
-              <h4>L: <%= @my_location.low %>&deg;</h4>
-              <h4>H: <%= @my_location.high %>&deg;</h4>
+              <h4>L: <%= List.first(@my_location.weather.daily)[:temperature][:low] %>&deg;</h4>
+          <h4>H: <%= List.first(@my_location.weather.daily)[:temperature][:high] %>&deg;</h4>
             </div>
           </div>
         </div>
@@ -121,6 +121,12 @@ defmodule HimmelWeb.PlacesLive do
     end
 
     {:noreply, assign(socket, saved_places: updated_places)}
+  end
+
+  def handle_event("set_main_weather", %{"id" => id}, socket) do
+    place = Enum.find(socket.assigns.saved_places, fn p -> p.id == id end)
+    send(self(), {:set_main_weather, place})
+    {:noreply, socket}
   end
 
   def place_card(assigns) do
