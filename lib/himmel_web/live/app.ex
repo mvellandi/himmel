@@ -29,10 +29,20 @@ defmodule HimmelWeb.AppLive do
 
     {:ok,
      assign(socket,
+       main_weather: main_weather,
        my_location: main_weather,
        screen: :main
      )}
   end
+
+  # def update(assigns, socket) do
+  #   {
+  #     :ok,
+  #     socket
+  #     |> assign(assigns)
+  #     #  |> assign()
+  #   }
+  # end
 
   def render(assigns) do
     ~H"""
@@ -71,7 +81,7 @@ defmodule HimmelWeb.AppLive do
       <%!-- =< 1280px: ALL @SCREEN SHOWN IN A SINGLE ROW --%>
       <div class="flex justify-center gap-10">
         <%!-- MAIN --%>
-        <.live_component module={MainLive} id="main" screen={@screen} my_location={@my_location} />
+        <.live_component module={MainLive} id="main" screen={@screen} main_weather={@main_weather} />
         <%!-- PLACES --%>
         <.live_component
           module={PlacesLive}
@@ -106,8 +116,7 @@ defmodule HimmelWeb.AppLive do
   # end
 
   def handle_info({:set_main_weather, place}, socket) do
-    main_weather = prepare_main_weather(place)
-    {:noreply, assign(socket, my_location: main_weather)}
+    {:noreply, assign(socket, main_weather: prepare_main_weather(place))}
   end
 
   def prepare_main_weather(%PlaceView{name: name, weather: weather}) do
