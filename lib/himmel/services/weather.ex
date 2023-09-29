@@ -121,7 +121,6 @@ defmodule Himmel.Services.Weather do
           datetime: datetime_struct
         }
         |> Map.put(:day_or_night, day_or_night)
-        |> IO.inspect(label: "hourly forecast")
       end)
 
     current_hour =
