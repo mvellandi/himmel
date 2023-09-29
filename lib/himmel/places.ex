@@ -4,6 +4,7 @@ defmodule Himmel.Places do
   """
 
   import Ecto.Query, warn: false
+  alias Himmel.Places.{Place, PlaceView, Coordinates}
   alias Himmel.Repo
 
   alias Himmel.Places.Place
@@ -100,5 +101,33 @@ defmodule Himmel.Places do
   """
   def change_place(%Place{} = place, attrs \\ %{}) do
     Place.changeset(place, attrs)
+  end
+
+  def create_place_view_from_search_result(%{
+        name: name,
+        latitude: latitude,
+        longitude: longitude
+      }) do
+    %PlaceView{
+      id: "#{latitude},#{longitude}",
+      name: name,
+      coordinates: %Coordinates{
+        latitude: latitude,
+        longitude: longitude
+      },
+      weather: %{},
+      last_updated: nil
+    }
+  end
+
+  def create_place_view_from_place(place = %Place{}) do
+    %PlaceView{
+      id: "#{place.coordinates.latitude},#{place.coordinates.longitude}",
+      db_id: place.id,
+      name: place.name,
+      coordinates: place.coordinates,
+      weather: %{},
+      last_updated: nil
+    }
   end
 end
