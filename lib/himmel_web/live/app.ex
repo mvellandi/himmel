@@ -16,7 +16,7 @@ defmodule HimmelWeb.AppLive do
 
     place_weather =
       if socket.assigns.current_user do
-        # TODO: get user's last loaded place instead of IP, and have the Weather genserver get the weather for that place, user's location, and user's other saved places
+        # TODO: get user's last loaded place instead of IP, and have the Weather genserver get the weather for that place, user's location, and user's other saved places, otherwise get current weather from user's IP
         Places.create_place_view_from_socket(socket)
         |> Weather.get_weather()
       else
@@ -27,22 +27,15 @@ defmodule HimmelWeb.AppLive do
 
     main_weather = prepare_main_weather(place_weather)
 
+    # TODO: if the user has a last loaded place, we still need to get the weather for my_location and assign it accordingly, so it shows up in the places list
+
     {:ok,
      assign(socket,
        main_weather: main_weather,
-       my_location: main_weather,
+       my_location: place_weather,
        screen: :main
      )}
   end
-
-  # def update(assigns, socket) do
-  #   {
-  #     :ok,
-  #     socket
-  #     |> assign(assigns)
-  #     #  |> assign()
-  #   }
-  # end
 
   def render(assigns) do
     ~H"""
@@ -112,6 +105,13 @@ defmodule HimmelWeb.AppLive do
     {:noreply, assign(socket, screen: screen)}
   end
 
+  def handle_event("set_main_weather_to_my_location", _, socket) do
+    my_location = socket.assigns.my_location
+    IO.inspect(my_location, label: "my_location")
+    socket = assign(socket, main_weather: prepare_main_weather(my_location))
+    {:noreply, socket}
+  end
+
   # def handle_event(%Phoenix.PubSub.Broadcast{}) do
   # end
 
@@ -119,7 +119,7 @@ defmodule HimmelWeb.AppLive do
     {:noreply, assign(socket, main_weather: prepare_main_weather(place))}
   end
 
-  def prepare_main_weather(%PlaceView{name: name, weather: weather}) do
+  defp prepare_main_weather(%PlaceView{name: name, weather: weather}) do
     %{
       name: name,
       temperature: weather.current.temperature,
