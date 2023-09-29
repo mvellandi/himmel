@@ -54,7 +54,7 @@ defmodule HimmelWeb.MainLive do
       <div class="flex flex-col items-center">
         <h3 class="text-xl"><%= time.hour %></h3>
         <div class="h-12 w-12"><img src={time.description.image} /></div>
-        <span class="text-2xl"><%= time.temperature %></span>
+        <span class="text-2xl"><%= time.temperature %>&deg;</span>
       </div>
     <% end %>
     """
