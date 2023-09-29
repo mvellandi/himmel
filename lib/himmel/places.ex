@@ -6,7 +6,7 @@ defmodule Himmel.Places do
   import Ecto.Query, warn: false
   alias Himmel.Places.{Place, PlaceView, Coordinates}
   alias Himmel.Repo
-
+  alias Himmel.Services.IP
   alias Himmel.Places.Place
 
   @doc """
@@ -126,6 +126,30 @@ defmodule Himmel.Places do
       db_id: place.id,
       name: place.name,
       coordinates: place.coordinates,
+      weather: %{},
+      last_updated: nil
+    }
+  end
+
+  def create_place_view_from_socket(socket) do
+    details =
+      socket
+      |> IP.get_user_ip()
+      |> IP.get_ip_details()
+
+    {name, coordinates} =
+      case Mix.env() do
+        :dev ->
+          {"Hamburg", %Coordinates{latitude: 53.5488, longitude: 9.9872}}
+
+        :prod ->
+          {details.city, %Coordinates{latitude: details.latitude, longitude: details.longitude}}
+      end
+
+    %PlaceView{
+      id: "#{coordinates.latitude},#{coordinates.longitude}",
+      name: name,
+      coordinates: coordinates,
       weather: %{},
       last_updated: nil
     }
