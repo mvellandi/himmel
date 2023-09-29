@@ -2,7 +2,7 @@ defmodule HimmelWeb.PlacesLive do
   use HimmelWeb, :live_component
   alias Himmel.Services
   alias Himmel.Weather
-  alias Himmel.Places.{Place, Coordinates}
+  alias Himmel.Places.{Place, Coordinates, PlaceView}
 
   def update(assigns, socket) do
     {:ok,
