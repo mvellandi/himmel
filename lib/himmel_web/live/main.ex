@@ -14,15 +14,15 @@ defmodule HimmelWeb.MainLive do
           <%!-- <button>P</button> --%>
           <%!-- <% end %> --%>
           <div class="flex flex-col items-center pt-16 pb-12">
-            <h1 class="text-4xl"><%= @my_location.name %></h1>
+            <h1 class="text-4xl"><%= @main_weather.name %></h1>
             <h2 class="text-8xl py-1 font-extralight">
-              <%= @my_location.temperature %>
+              <%= @main_weather.temperature %>
               <span class="relative"><span class="absolute">&deg;</span></span>
             </h2>
-            <h3 class="text-2xl"><%= @my_location.description_text %></h3>
+            <h3 class="text-2xl"><%= @main_weather.description_text %></h3>
             <div class="flex justify-between gap-5 text-2xl">
-              <h4>L: <%= @my_location.low %>&deg;</h4>
-              <h4>H: <%= @my_location.high %>&deg;</h4>
+              <h4>L: <%= @main_weather.low %>&deg;</h4>
+              <h4>H: <%= @main_weather.high %>&deg;</h4>
             </div>
           </div>
           <%!-- <%= if length(parent.places) > 1 && "this isn't the last place" do %> --%>
@@ -36,13 +36,13 @@ defmodule HimmelWeb.MainLive do
         class="relative flex gap-2 rounded-xl p-4 bg-red-dark overflow-x-auto whitespace-nowrap"
       >
         <%!-- HOUR COLUMNS --%>
-        <.hours hours={@my_location.hours} />
+        <.hours hours={@main_weather.hours} />
       </div>
       <%!-- 10-DAYS --%>
       <div class="flex flex-col rounded-xl pt-2 pb-4 px-4 bg-red-dark">
         <h3 class="uppercase text-red-medium text-[1.1rem]">Icon 10-Day Forecast</h3>
         <%!-- DAY ROWS --%>
-        <.days days={@my_location.days} />
+        <.days days={@main_weather.days} />
       </div>
     </div>
     """
