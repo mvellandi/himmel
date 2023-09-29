@@ -5,8 +5,8 @@ defmodule HimmelWeb.UserResetPasswordLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
-      <.header class="text-center">Reset Password</.header>
+    <div class="mx-auto max-w-sm pt-28">
+      <.header class="text-center pb-4">Reset Password</.header>
 
       <.simple_form
         for={@form}

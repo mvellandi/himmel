@@ -5,7 +5,7 @@ defmodule HimmelWeb.UserSettingsLive do
 
   def render(assigns) do
     ~H"""
-    <.header class="text-center">
+    <.header class="text-center pb-4">
       Account Settings
       <:subtitle>Manage your account email address and password settings</:subtitle>
     </.header>

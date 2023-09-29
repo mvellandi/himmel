@@ -3,15 +3,14 @@ defmodule HimmelWeb.UserLoginLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
-      <.header class="text-center">
-        Sign in to account
+    <div class="mx-auto max-w-sm pt-28">
+      <.header class="text-center pb-4">
+        Sign in
         <:subtitle>
-          Don't have an account?
-          <.link navigate={~p"/user/register"} class="font-semibold text-brand hover:underline">
-            Sign up
-          </.link>
-          for an account now.
+          Don't have an account?<br />
+            <.link navigate={~p"/user/register"} class="text-xl font-bold text-brand underline">
+              Register here
+            </.link>
         </:subtitle>
       </.header>
 

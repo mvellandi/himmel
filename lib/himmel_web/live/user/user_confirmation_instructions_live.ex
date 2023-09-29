@@ -5,8 +5,8 @@ defmodule HimmelWeb.UserConfirmationInstructionsLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm">
-      <.header class="text-center">
+    <div class="mx-auto max-w-sm pt-28">
+      <.header class="text-center pb-4">
         No confirmation instructions received?
         <:subtitle>We'll send a new confirmation link to your inbox</:subtitle>
       </.header>
