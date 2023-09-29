@@ -22,7 +22,7 @@ defmodule Himmel.Services.Weather do
           coordinates: %Coordinates{latitude: latitude, longitude: longitude}
         } = place
       ) do
-    weather =
+    weather_data =
       ("https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&current_weather=true&forecast_days=10&timezone=auto&" <>
          "latitude=#{latitude}&" <>
          "longitude=#{longitude}")
@@ -32,7 +32,12 @@ defmodule Himmel.Services.Weather do
       |> prepare_hourly_weather(36)
       |> Map.take(@weather_keys)
 
+    last_updated = weather_data.last_updated
+    weather = Map.drop(weather_data, [:last_updated])
+
     Map.put(place, :weather, weather)
+    |> Map.put(:last_updated, last_updated)
+    |> IO.inspect()
   end
 
   defp prepare_current_weather(%{"current_weather" => current} = weather) do
@@ -46,7 +51,7 @@ defmodule Himmel.Services.Weather do
 
     Map.drop(weather, ["current_weather"])
     |> Map.put(:current, updated_current_weather)
-    |> Map.put(:timestamp, Utils.meteo_datetime_to_struct(current["time"], weather))
+    |> Map.put(:last_updated, Utils.meteo_datetime_to_struct(current["time"], weather))
   end
 
   defp prepare_daily_weather(%{"daily" => daily} = weather) do
@@ -98,7 +103,7 @@ defmodule Himmel.Services.Weather do
   end
 
   defp prepare_hourly_weather(%{"hourly" => hourly} = weather, hours_to_forecast) do
-    timestamp = weather.timestamp
+    last_updated = weather.last_updated
 
     first_3_days = Enum.take(weather.daily, 3)
 
@@ -119,7 +124,7 @@ defmodule Himmel.Services.Weather do
 
     current_hour =
       Enum.find_index(all_hourly_forecasts, fn forecast ->
-        forecast.hour == timestamp.hour
+        forecast.hour == last_updated.hour
       end)
 
     hourly_forecasts =
