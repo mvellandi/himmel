@@ -1,5 +1,5 @@
 defmodule Himmel.Places.PlaceView do
-  alias Himmel.Places.Coordinates
+  alias Himmel.Places.{Place, Coordinates}
 
   defstruct [
     :id,
@@ -33,10 +33,8 @@ defmodule Himmel.Places.PlaceView do
       db_id: place.id,
       name: place.name,
       coordinates: place.coordinates,
-      },
       weather: %{},
       last_updated: nil
     }
   end
-
 end
