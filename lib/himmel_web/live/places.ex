@@ -69,8 +69,8 @@ defmodule HimmelWeb.PlacesLive do
         <%!-- SAVED PLACES --%>
         <%!-- # TODO: add "load place" click attribute to card, and event handler to show weather for that place in main --%>
         <%!-- # TODO: add "delete place" click attribute to button, and event handler to show weather for that place in main --%>
-        <%= @saved_places |> IO.inspect() |>Enum.with_index |> Enum.map(fn({place, index}) -> %>
-          <.place_card id={"placeCard-#{index}"} place={place} />
+        <%= @saved_places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
+          <.place_card id={"placeCard-#{index}"} place={place} myself={@myself} />
         <% end) %>
       </div>
     </div>
@@ -93,11 +93,12 @@ defmodule HimmelWeb.PlacesLive do
       |> Places.create_place_view_from_search_result()
       |> Weather.get_weather()
 
-    # TODO: if user is authd, see if place is in DB, if not, save it, then save place in memory
-    # new function somewhere
+    if socket.assigns[:current_user] do
+      # TODO: save place in DB and add to user's saved places
+      IO.puts("save place in DB (if not already) and add to user's saved places")
+    end
 
-    # TODO: set current weather in main with this place
-    # send(self(), {:set_main_weather, place_with_weather})
+    send(self(), {:set_main_weather, place_with_weather})
 
     socket =
       assign(socket,
@@ -109,19 +110,26 @@ defmodule HimmelWeb.PlacesLive do
     {:noreply, socket}
   end
 
-  def handle_event("remove_place", %{"id" => _id}, socket) do
-    # place = get_place_in_memory(socket, :saved_places, place_id)
-    # updated_places = Enum.reject(socket.assigns.saved_places, fn p -> p["id"] == place_id end)
-    {:noreply, socket}
+  def handle_event("remove_place", %{"id" => id}, socket) do
+    updated_places = Enum.reject(socket.assigns.saved_places, fn p -> p.id == id end)
+
+    if socket.assigns[:current_user] do
+      # TODO: remove place from user's saved places and conditionally remove place from DB
+      IO.puts(
+        "remove place from user's saved places, and if there's place has no users, then remove place in DB"
+      )
+    end
+
+    {:noreply, assign(socket, saved_places: updated_places)}
   end
 
   def place_card(assigns) do
     ~H"""
-    <div id={@id} class="flex justify-between items-center rounded-xl bg-red-dark py-3.5 px-4">
+    <div id={@id} phx-target={@myself} phx-click="set_main_weather" phx-value-id={@place.id} class="flex justify-between items-center rounded-xl bg-red-dark py-3.5 px-4 cursor-pointer">
       <div class="flex flex-col">
         <h2 class="text-2xl font-bold leading-none"><%= @place.name %></h2>
         <h3 class="font-semibold pb-4"><%= @place.weather.current.description.text %></h3>
-        <button class="cursor-pointer text-red-light text-left h-6 w-6" phx-click="remove_place" phx-value-id={@place.id}><.icon_trash /></button>
+        <button class="cursor-pointer text-red-light text-left h-6 w-6" phx-target={@myself} phx-click="remove_place" phx-value-id={@place.id}><.icon_trash /></button>
       </div>
       <div class="flex flex-col h-full justify-between items-end">
         <span class="text-5xl font-light leading-[0.9]"><%= @place.weather.current.temperature %>&deg;</span>
