@@ -37,7 +37,6 @@ defmodule Himmel.Services.Weather do
 
     Map.put(place, :weather, weather)
     |> Map.put(:last_updated, last_updated)
-    |> IO.inspect()
   end
 
   defp prepare_current_weather(%{"current_weather" => current} = weather) do
@@ -102,6 +101,7 @@ defmodule Himmel.Services.Weather do
     |> Map.put(:daily, daily_data)
   end
 
+  # TODO: fix hourly description image
   defp prepare_hourly_weather(%{"hourly" => hourly} = weather, hours_to_forecast) do
     last_updated = weather.last_updated
 
@@ -120,6 +120,8 @@ defmodule Himmel.Services.Weather do
           description: Descriptions.get_description(weathercode, day_or_night),
           datetime: datetime_struct
         }
+        |> Map.put(:day_or_night, day_or_night)
+        |> IO.inspect(label: "hourly forecast")
       end)
 
     current_hour =
