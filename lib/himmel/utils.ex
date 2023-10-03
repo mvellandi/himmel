@@ -52,27 +52,15 @@ defmodule Himmel.Utils do
     end
   end
 
-  def find_matching_day_from_daily_weather_list(list, date) do
-    is_match_date? = fn query_date, item_date -> query_date == item_date end
+  def is_datetime_day_or_night?(datetime, daily_weather_list) do
+    matching_day =
+      Enum.find(daily_weather_list, fn weather_day ->
+        weather_day.date == DateTime.to_date(datetime)
+      end)
 
-    Enum.find(list, fn weather_day ->
-      DateTime.to_date(date)
-      |> is_match_date?.(weather_day["date"])
-    end)
-  end
-
-  def is_day_or_night?(datetime, sunrise, sunset) do
-    case datetime < sunrise || datetime > sunset do
+    case datetime < matching_day.sunrise || datetime > matching_day.sunset do
       true -> :night
       false -> :day
     end
-  end
-
-  def is_datetime_day_or_night?(datetime, daily_weather_list) do
-    matching_day =
-      daily_weather_list
-      |> find_matching_day_from_daily_weather_list(datetime)
-
-    is_day_or_night?(datetime, matching_day["sunrise"], matching_day["sunset"])
   end
 end
