@@ -104,12 +104,14 @@ defmodule Himmel.Services.Weather do
   # TODO: fix hourly description image
   defp prepare_hourly_weather(%{"hourly" => hourly} = weather, hours_to_forecast) do
     last_updated = weather.last_updated
+    initial_hours_to_forecast = hours_to_forecast + 23
 
     first_3_days = Enum.take(weather.daily, 3)
 
     all_hourly_forecasts =
       [hourly["time"], hourly["temperature_2m"], hourly["weathercode"]]
       |> Enum.zip()
+      |> Enum.take(initial_hours_to_forecast)
       |> Enum.map(fn {datetime, temperature, weathercode} ->
         datetime_struct = Utils.meteo_datetime_to_struct(datetime, weather)
         day_or_night = Utils.is_datetime_day_or_night?(datetime_struct, first_3_days)
