@@ -3,6 +3,7 @@ defmodule HimmelWeb.AppLive do
   alias Himmel.Weather
   alias Himmel.Places
   alias Himmel.Places.PlaceView
+  alias HimmelWeb.Utils
   alias HimmelWeb.{MainLive, PlacesLive, SettingsLive}
 
   @doc """
@@ -17,11 +18,13 @@ defmodule HimmelWeb.AppLive do
     place_weather =
       if socket.assigns.current_user do
         # TODO: get user's last loaded place instead of IP, and have the Weather genserver get the weather for that place, user's location, and user's other saved places, otherwise get current weather from user's IP
-        Places.create_place_view_from_socket(socket)
+        Utils.get_user_ip_details_from_socket(socket)
+        |> Places.create_place_view_from_ip_details()
         |> Weather.get_weather()
       else
         # get current weather from user's IP
-        Places.create_place_view_from_socket(socket)
+        Utils.get_user_ip_details_from_socket(socket)
+        |> Places.create_place_view_from_ip_details()
         |> Weather.get_weather()
       end
 
