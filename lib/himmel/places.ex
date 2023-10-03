@@ -6,7 +6,6 @@ defmodule Himmel.Places do
   import Ecto.Query, warn: false
   alias Himmel.Places.{Place, PlaceView, Coordinates}
   alias Himmel.Repo
-  alias Himmel.Services.IP
   alias Himmel.Places.Place
 
   @doc """
@@ -131,12 +130,7 @@ defmodule Himmel.Places do
     }
   end
 
-  def create_place_view_from_socket(socket) do
-    details =
-      socket
-      |> IP.get_user_ip()
-      |> IP.get_ip_details()
-
+  def create_place_view_from_ip_details(details) do
     my_dev_location = Application.get_env(:himmel, :my_dev_location)
 
     {name, coordinates} =
