@@ -70,10 +70,10 @@ defmodule HimmelWeb.MainLive do
         </div>
         <div class="justify-self-center h-14 w-14"><img src={day.description.image} /></div>
         <div class="self-center justify-self-center">
-          <span class="justify-self-end"><%= day.temperature.low %></span>
+          <span class="justify-self-end"><%= day.temperature.low %>&deg;</span>
         </div>
         <div class="self-center justify-self-center">
-          <span class="justify-self-end"><%= day.temperature.high %></span>
+          <span class="justify-self-end"><%= day.temperature.high %>&deg;</span>
         </div>
       </div>
     <% end %>
