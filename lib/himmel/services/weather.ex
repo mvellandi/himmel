@@ -101,7 +101,6 @@ defmodule Himmel.Services.Weather do
     |> Map.put(:daily, daily_data)
   end
 
-  # TODO: fix hourly description image
   defp prepare_hourly_weather(%{"hourly" => hourly} = weather, hours_to_forecast) do
     last_updated = weather.last_updated
     initial_hours_to_forecast = hours_to_forecast + 23
