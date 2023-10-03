@@ -107,7 +107,6 @@ defmodule HimmelWeb.AppLive do
 
   def handle_event("set_main_weather_to_my_location", _, socket) do
     my_location = socket.assigns.my_location
-    IO.inspect(my_location, label: "my_location")
     socket = assign(socket, main_weather: prepare_main_weather(my_location))
     {:noreply, socket}
   end
