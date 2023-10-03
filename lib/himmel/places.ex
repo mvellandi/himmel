@@ -137,13 +137,15 @@ defmodule Himmel.Places do
       |> IP.get_user_ip()
       |> IP.get_ip_details()
 
-    {name, coordinates} =
-      case Mix.env() do
-        :dev ->
-          {"Hamburg", %Coordinates{latitude: 53.5488, longitude: 9.9872}}
+    my_dev_location = Application.get_env(:himmel, :my_dev_location)
 
-        :prod ->
+    {name, coordinates} =
+      case my_dev_location do
+        nil ->
           {details.city, %Coordinates{latitude: details.latitude, longitude: details.longitude}}
+
+        {name, coordinates} ->
+          {name, %Coordinates{latitude: coordinates.latitude, longitude: coordinates.longitude}}
       end
 
     %PlaceView{
