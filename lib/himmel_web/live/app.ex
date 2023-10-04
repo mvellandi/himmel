@@ -31,6 +31,7 @@ defmodule HimmelWeb.AppLive do
     main_weather = prepare_main_weather(place_weather)
 
     # TODO: if the user has a last loaded place, we still need to get the weather for my_location and assign it accordingly, so it shows up in the places list
+    # my_location_weather = # get weather for my_location
 
     {:ok,
      assign(socket,

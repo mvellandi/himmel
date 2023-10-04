@@ -8,7 +8,7 @@ defmodule HimmelWeb.PlacesLive do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(search: "", search_results: [], saved_places: [])}
+     |> assign(search: "", search_results: nil, saved_places: [])}
   end
 
   def render(assigns) do
@@ -22,32 +22,42 @@ defmodule HimmelWeb.PlacesLive do
       <%!-- TODO: See if I can better handle hiding the saved places list during search results --%>
       <%!-- phx-focus={JS.hide(to: "#places-list") |> JS.show(to: "#search-results")}
           phx-blur={JS.show(to: "#places-list") |> JS.hide(to: "#search-results")} --%>
-      <form phx-submit="search_places" phx-target={@myself} class="inline-flex items-center justify-between w-full h-10 rounded-xl bg-red-dark text-red-light py-2 pl-2">
-        <input
-          type="text"
-          name="name"
-          value={@search}
-          placeholder="Search for a city or place"
-          autocomplete="off"
-          phx-debounce="200"
-          class="w-full bg-transparent text-white placeholder:text-red-light pl-2"
-        />
-        <button class="px-4 transition ease-in-out duration-150 outline-none">
-          <.icon_loupe />
-        </button>
-      </form>
+      <search>
+        <form phx-submit="search_places" phx-target={@myself} class="inline-flex items-center justify-between w-full h-10 rounded-xl bg-red-dark text-red-light py-2 pl-2">
+          <input
+            type="text"
+            name="name"
+            value={@search}
+            placeholder="Search for a city or place"
+            autocomplete="off"
+            phx-debounce="200"
+            class="w-full bg-transparent text-white placeholder:text-red-light pl-2"
+          />
+          <button class="px-4 transition ease-in-out duration-150 outline-none">
+            <.icon_loupe />
+          </button>
+        </form>
+      </search>
       <%!-- SEARCH RESULT LIST --%>
       <div id="search-results" class="">
+        <%= if not is_nil(@search_results) do %>
         <ul class="flex flex-col gap-2">
-          <%= @search_results |> Enum.with_index |> Enum.map(fn({result, index}) -> %>
-            <li id={"result-#{index}"} phx-target={@myself} phx-click="add_place" phx-value-id={result.id} >
+          <%= if @search_results == [] && @search !== "" do %>
+            <li class="flex justify-left items-center rounded-xl bg-red-dark py-3.5 px-4">
+              <h2 class="text-2xl font-bold">No results found</h2>
+            </li>
+          <% else %>
+            <%= @search_results |> Enum.with_index |> Enum.map(fn({result, index}) -> %>
+              <li id={"result-#{index}"} phx-target={@myself} phx-click="add_place" phx-value-id={result.id} >
                 <div class="border-2 border-red-dark px-4 py-2 cursor-pointer rounded-xl bg-red-dark hover:border-red-medium hover:border-2">
                   <h2 class="text-2xl font-bold"><%= result.name %></h2>
                   <h3 class="font-semibold"><%= result.region %>, <%= result.country %></h3>
                 </div>
-            </li>
-          <% end) %>
+              </li>
+            <% end) %>
+          <% end %>
         </ul>
+        <% end %>
       </div>
       <%!-- PLACES LIST --%>
       <div id="places-list" class="flex flex-col space-y-3">
@@ -87,27 +97,37 @@ defmodule HimmelWeb.PlacesLive do
     {:noreply, socket}
   end
 
+  # TODO: don't add place if already in saved places
   def handle_event("add_place", %{"id" => id}, socket) do
-    place_with_weather =
-      get_place_from_search_results(id, socket)
-      |> Places.create_place_view_from_search_result()
-      |> Weather.get_weather()
+    place = get_place_from_search_results(id, socket)
+    place_id = "#{place.latitude},#{place.longitude}"
+    saved_places = socket.assigns.saved_places
+    is_already_saved? = Enum.any?(saved_places, fn p -> p.id == place_id end)
 
-    if socket.assigns[:current_user] do
-      # TODO: save place in DB and add to user's saved places
-      IO.puts("save place in DB (if not already) and add to user's saved places")
+    case is_already_saved? do
+      true ->
+        {:noreply, assign(socket, search: "", search_results: nil)}
+
+      false ->
+        place_with_weather =
+          place
+          |> Places.create_place_view_from_search_result()
+          |> Weather.get_weather()
+
+        if socket.assigns[:current_user] do
+          # TODO: save place in DB and add to user's saved places
+          IO.puts("save place in DB (if not already) and add to user's saved places")
+        end
+
+        send(self(), {:set_main_weather, place_with_weather})
+
+        {:noreply,
+         assign(socket,
+           search: "",
+           search_results: nil,
+           saved_places: [place_with_weather | saved_places]
+         )}
     end
-
-    send(self(), {:set_main_weather, place_with_weather})
-
-    socket =
-      assign(socket,
-        search: "",
-        search_results: [],
-        saved_places: [place_with_weather | socket.assigns.saved_places]
-      )
-
-    {:noreply, socket}
   end
 
   def handle_event("remove_place", %{"id" => id}, socket) do
