@@ -11,10 +11,20 @@ defmodule Himmel.Services.Weather do
   ]
 
   def get_raw_weather_hamburg() do
-    ("https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&current_weather=true&forecast_days=10&timezone=auto&" <>
-       "latitude=53.5488&" <>
-       "longitude=9.9872")
-    |> Utils.json_request()
+    response =
+      Utils.web_request(
+        "https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&current_weather=true&forecast_days=10&timezone=auto&" <>
+          "latitude=53.5488&" <>
+          "longitude=9.9872"
+      )
+
+    case response do
+      {:ok, response} ->
+        Jason.decode!(response.body)
+
+      {:error, reason} ->
+        IO.inspect(reason, label: "Web request error")
+    end
   end
 
   def get_weather(
@@ -22,21 +32,32 @@ defmodule Himmel.Services.Weather do
           coordinates: %Coordinates{latitude: latitude, longitude: longitude}
         } = place
       ) do
-    weather_data =
-      ("https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&current_weather=true&forecast_days=10&timezone=auto&" <>
-         "latitude=#{latitude}&" <>
-         "longitude=#{longitude}")
-      |> Utils.json_request()
-      |> prepare_current_weather()
-      |> prepare_daily_weather()
-      |> prepare_hourly_weather(36)
-      |> Map.take(@weather_keys)
+    response =
+      Utils.web_request(
+        "https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&current_weather=true&forecast_days=10&timezone=auto&" <>
+          "latitude=#{latitude}&" <>
+          "longitude=#{longitude}"
+      )
 
-    last_updated = weather_data.last_updated
-    weather = Map.drop(weather_data, [:last_updated])
+    case response do
+      {:ok, response} ->
+        weather_data =
+          Jason.decode!(response.body)
+          |> prepare_current_weather()
+          |> prepare_daily_weather()
+          |> prepare_hourly_weather(36)
+          |> Map.take(@weather_keys)
 
-    Map.put(place, :weather, weather)
-    |> Map.put(:last_updated, last_updated)
+        last_updated = weather_data.last_updated
+        place_weather = Map.drop(weather_data, [:last_updated])
+
+        place
+        |> Map.put(:weather, place_weather)
+        |> Map.put(:last_updated, last_updated)
+
+      {:error, reason} ->
+        IO.inspect(reason, label: "Web request error")
+    end
   end
 
   defp prepare_current_weather(%{"current_weather" => current} = weather) do
