@@ -1,10 +1,8 @@
 defmodule Himmel.Utils do
   @moduledoc false
 
-  def json_request(url) do
-    {:ok, response} = Finch.build(:get, url) |> Finch.request(Himmel.Finch)
-    json_string = response.body
-    Jason.decode!(json_string)
+  def web_request(url) do
+    Finch.build(:get, url) |> Finch.request(Himmel.Finch)
   end
 
   def celsius_to_fahrenheit(celsius) do
