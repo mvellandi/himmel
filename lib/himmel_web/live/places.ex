@@ -99,7 +99,6 @@ defmodule HimmelWeb.PlacesLive do
     {:noreply, assign(socket, search: "", search_results: nil)}
   end
 
-  # TODO: don't add place if already in saved places
   def handle_event("add_place", %{"id" => id}, socket) do
     place = get_place_from_search_results(id, socket)
     place_id = "#{place.latitude},#{place.longitude}"
@@ -117,7 +116,10 @@ defmodule HimmelWeb.PlacesLive do
           |> Weather.get_weather()
 
         if socket.assigns[:current_user] do
-          # TODO: save place in DB and add to user's saved places
+          # TODO: see if place already exists in DB
+          # if not, then save place in DB
+          # then add place to user's saved places
+
           IO.puts("save place in DB (if not already) and add to user's saved places")
         end
 
@@ -136,7 +138,8 @@ defmodule HimmelWeb.PlacesLive do
     updated_places = Enum.reject(socket.assigns.saved_places, fn p -> p.id == id end)
 
     if socket.assigns[:current_user] do
-      # TODO: remove place from user's saved places and conditionally remove place from DB
+      # TODO: remove place from user's saved places
+      # TODO: if place has no users, then remove place in DB
       IO.puts(
         "remove place from user's saved places, and if there's place has no users, then remove place in DB"
       )
