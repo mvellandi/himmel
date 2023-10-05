@@ -37,6 +37,10 @@ defmodule Himmel.Places do
   """
   def get_place!(id), do: Repo.get!(Place, id)
 
+  def get_place_from_coordinates(%Coordinates{} = coordinates) do
+    Repo.get_by(Place, coordinates: coordinates)
+  end
+
   @doc """
   Creates a place.
 
