@@ -7,7 +7,6 @@ defmodule Himmel.Places.Place do
   schema "places" do
     field :name, :string
     embeds_one :coordinates, Coordinates
-    field :weather, :map, default: %{}
 
     many_to_many :user, User, join_through: "places_users"
 
@@ -17,7 +16,8 @@ defmodule Himmel.Places.Place do
   @doc false
   def changeset(place, attrs) do
     place
-    |> cast(attrs, [:name, :coordinates])
+    |> cast(attrs, [:name])
+    |> cast_embed(:coordinates)
     |> validate_required([:name, :coordinates])
   end
 end
