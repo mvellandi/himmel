@@ -19,9 +19,6 @@ defmodule HimmelWeb.PlacesLive do
     >
       <h1 class="text-4xl font-bold ml-4">Places</h1>
       <%!-- SEARCH --%>
-      <%!-- TODO: See if I can better handle hiding the saved places list during search results --%>
-      <%!-- phx-focus={JS.hide(to: "#places-list") |> JS.show(to: "#search-results")}
-          phx-blur={JS.show(to: "#places-list") |> JS.hide(to: "#search-results")} --%>
       <.search_bar search={@search} myself={@myself} />
       <%!-- SEARCH RESULT LIST --%>
       <div id="search-results">
@@ -74,8 +71,6 @@ defmodule HimmelWeb.PlacesLive do
             </div>
           </div>
           <%!-- SAVED PLACES --%>
-          <%!-- # TODO: add "load place" click attribute to card, and event handler to show weather for that place in main --%>
-          <%!-- # TODO: add "delete place" click attribute to button, and event handler to show weather for that place in main --%>
           <%= @saved_places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
             <.place_card id={"placeCard-#{index}"} place={place} myself={@myself} />
           <% end) %>
