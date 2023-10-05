@@ -8,9 +8,9 @@ defmodule HimmelWeb.UserLoginLive do
         Sign in
         <:subtitle>
           Don't have an account?<br />
-            <.link navigate={~p"/user/register"} class="text-xl font-bold text-brand underline">
-              Register here
-            </.link>
+          <.link navigate={~p"/user/register"} class="text-xl font-bold text-brand underline">
+            Register here
+          </.link>
         </:subtitle>
       </.header>
 
