@@ -3,6 +3,7 @@ defmodule Himmel.Places.Place do
   import Ecto.Changeset
   alias Himmel.Accounts.User
   alias Himmel.Places.Coordinates
+  alias Himmel.Repo
 
   schema "places" do
     field :name, :string
@@ -17,7 +18,21 @@ defmodule Himmel.Places.Place do
   def changeset(place, attrs) do
     place
     |> cast(attrs, [:name])
-    |> cast_embed(:coordinates)
-    |> validate_required([:name, :coordinates])
+    |> cast_embed(:coordinates, required: true)
+    |> cast_assoc(:user, required: true)
+    |> validate_required([:name])
+  end
+
+  # defp validate_user_exists(changeset, user) do
+  #   case user do
+  #     %{"id" => id} ->
+  #       case Repo.get(User, id) do
+  #         nil -> add_error(changeset, :user, "does not exist")
+  #         _ -> changeset
+  #       end
+
+  #     _ ->
+  #       changeset
+  #   end
   end
 end
