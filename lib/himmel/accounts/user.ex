@@ -14,6 +14,11 @@ defmodule Himmel.Accounts.User do
     timestamps()
   end
 
+  def places_changeset(user, _attrs) do
+    user
+    |> cast_assoc(:places)
+  end
+
   @doc """
   A user changeset for registration.
 
