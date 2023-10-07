@@ -134,11 +134,12 @@ defmodule Himmel.Places do
     }
   end
 
+  @doc "Create a %PlaceView{} from user's IP details. Defaults to a static location when in a dev environment, otherwise uses the user's IP info in the details argument, and returns a %PlaceView{} with the user's city as the name, and the user's coordinates as the coordinates."
   def create_place_view_from_ip_details(details) do
-    my_dev_location = Application.get_env(:himmel, :my_dev_location)
+    my_location = Application.get_env(:himmel, :my_location)
 
     {name, coordinates} =
-      case my_dev_location do
+      case my_location do
         nil ->
           {details.city, %Coordinates{latitude: details.latitude, longitude: details.longitude}}
 

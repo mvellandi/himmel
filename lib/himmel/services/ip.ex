@@ -10,7 +10,7 @@ defmodule Himmel.Services.IP do
 
   @doc "Gets the coordinates and city from an IP address"
   def get_ip_details(ip) do
-    with {:ok, %IPinfo{} = handler} <- IPinfo.create(Dotenv.get("IPINFO_TOKEN")),
+    with {:ok, %IPinfo{} = handler} <- IPinfo.create(Application.get_env(:ipinfo, :token)),
          {:ok, details} <- IPinfo.details(handler, ip) do
       details
     end

@@ -20,6 +20,16 @@ if System.get_env("PHX_SERVER") do
   config :himmel, HimmelWeb.Endpoint, server: true
 end
 
+# IPINFO_TOKEN is used to get the user's IP address and location.
+ipinfo_token =
+  System.get_env("IPINFO_TOKEN") ||
+    raise """
+    environment variable IPINFO_TOKEN is missing.
+    You can get one by signing up at https://ipinfo.io/signup
+    """
+
+config :ipinfo, token: ipinfo_token
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
