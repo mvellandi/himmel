@@ -8,5 +8,7 @@ defmodule Himmel.Repo.Migrations.CreatePlaces do
 
       timestamps()
     end
+
+    create unique_index(:places, [:coordinates])
   end
 end
