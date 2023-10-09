@@ -6,8 +6,10 @@ defmodule Himmel.Repo.Migrations.CreateUserAuthTables do
 
     create table(:user) do
       add :email, :citext, null: false
+      add :places, :map
       add :hashed_password, :string, null: false
       add :confirmed_at, :naive_datetime
+      add :active_place_id, :string
       timestamps()
     end
 
