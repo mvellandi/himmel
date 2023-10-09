@@ -14,21 +14,32 @@ defmodule HimmelWeb.AppLive do
     # if connected?(socket) do
     #   HimmelWeb.Endpoint.subscribe("places")
     # end
+    current_user = socket.assigns.current_user
 
-    place_weather =
-      if socket.assigns.current_user do
+    user_location_weather =
+      Utils.get_user_ip_details_from_socket(socket)
+      |> Places.create_place_view_from_ip_details()
+      |> Weather.get_weather()
+
+    {saved_places, last_saved_place} =
+      if current_user do
         # TODO: get user's last loaded place instead of IP, and have the Weather genserver get the weather for that place, user's location, and user's other saved places, otherwise get current weather from user's IP
-        Utils.get_user_ip_details_from_socket(socket)
-        |> Places.create_place_view_from_ip_details()
-        |> Weather.get_weather()
+        # saved_places = current_user |> Himmel.Accounts.get_saved_places()
+
+        # last_saved_place =
+        #   if Enum.count(saved_places) > 0 do
+        #     Enum.at(saved_places, 0)
+        #   else
+        #     nil
+        #   end
+
+        # {saved_places, last_saved_place}
+        {nil, nil}
       else
-        # get current weather from user's IP
-        Utils.get_user_ip_details_from_socket(socket)
-        |> Places.create_place_view_from_ip_details()
-        |> Weather.get_weather()
+        {nil, nil}
       end
 
-    main_weather = prepare_main_weather(place_weather)
+    main_weather = prepare_main_weather(user_location_weather)
 
     # TODO: if the user has a last loaded place, we still need to get the weather for my_location and assign it accordingly, so it shows up in the places list
     # my_location_weather = # get weather for my_location
@@ -36,7 +47,7 @@ defmodule HimmelWeb.AppLive do
     {:ok,
      assign(socket,
        main_weather: main_weather,
-       my_location: place_weather,
+       my_location: user_location_weather,
        screen: :main
      )}
   end
