@@ -1,38 +1,26 @@
 defmodule Himmel.Places.Place do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Himmel.Accounts.User
   alias Himmel.Places.Coordinates
-  # alias Himmel.Repo
+  alias Himmel.Weather.WeatherData
 
-  schema "places" do
+  embedded_schema do
     field :name, :string
+    field :custom_name, :string
     embeds_one :coordinates, Coordinates
-
-    many_to_many :user, User, join_through: "places_users"
-
-    timestamps()
+    field :location_id, :string
+    embeds_one :weather, WeatherData
   end
 
-  @doc false
   def changeset(place, attrs) do
     place
-    |> cast(attrs, [:name])
+    |> cast(attrs, [:name, :custom_name])
     |> cast_embed(:coordinates, required: true)
-    |> cast_assoc(:user, with: &User.places_changeset/2, required: true)
-    |> validate_required([:name, :coordinates, :user])
+    |> add_location_id(attrs[:coordinates])
+    |> validate_required([:name])
   end
 
-  # defp validate_user_exists(changeset, user) do
-  #   case user do
-  #     %{"id" => id} ->
-  #       case Repo.get(User, id) do
-  #         nil -> add_error(changeset, :user, "does not exist")
-  #         _ -> changeset
-  #       end
-
-  #     _ ->
-  #       changeset
-  #   end
-  # end
+  defp add_location_id(changeset, coordinates) do
+    put_change(changeset, :location_id, "#{coordinates.latitude},#{coordinates.longitude}")
+  end
 end
