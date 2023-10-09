@@ -8,15 +8,23 @@ defmodule Himmel.Accounts.User do
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
-
-    many_to_many :places, Place, join_through: "places_users"
+    field :active_place_id, :string
+    embeds_many :places, Place
 
     timestamps()
   end
 
-  def places_changeset(user, _attrs) do
+  @doc """
+  A user changeset for updating the places.
+  Additional options to consider for cast_embed:
+    # sort_param: :places_sort,
+    # drop_param: :places_drop,
+  """
+
+  def places_changeset(user, attrs) do
     user
-    |> cast_assoc(:places)
+    |> cast(attrs, [])
+    |> cast_embed(:places, on_replace: :delete)
   end
 
   @doc """
