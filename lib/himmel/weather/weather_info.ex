@@ -1,4 +1,4 @@
-defmodule Himmel.WeatherInfo do
+defmodule Himmel.Weather.WeatherInfo do
   use Ecto.Schema
   import Ecto.Changeset
 
