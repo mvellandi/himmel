@@ -33,8 +33,8 @@ defmodule HimmelWeb.PlacesLive do
                 <li
                   id={"result-#{index}"}
                   phx-target={@myself}
-                  phx-click="add_place"
-                  phx-value-id={result.id}
+                  phx-click="add_search_result_to_saved_places"
+                  phx-value-search_result_id={result.id}
                 >
                   <div class="border-2 border-red-dark px-4 py-2 cursor-pointer rounded-xl bg-red-dark hover:border-red-medium hover:border-2">
                     <h2 class="text-2xl font-bold"><%= result.name %></h2>
@@ -65,8 +65,8 @@ defmodule HimmelWeb.PlacesLive do
                 <%= @my_location.weather.current.temperature %>&deg;
               </span>
               <div class="flex justify-end gap-5 font-semibold">
-                <h4>L: <%= List.first(@my_location.weather.daily)[:temperature][:low] %>&deg;</h4>
-                <h4>H: <%= List.first(@my_location.weather.daily)[:temperature][:high] %>&deg;</h4>
+                <h4>L: <%= List.first(@my_location.weather.daily).temperature.low %>&deg;</h4>
+                <h4>L: <%= List.first(@my_location.weather.daily).temperature.high %>&deg;</h4>
               </div>
             </div>
           </div>
@@ -99,11 +99,15 @@ defmodule HimmelWeb.PlacesLive do
     {:noreply, assign(socket, search: "", search_results: nil)}
   end
 
-  def handle_event("add_place", %{"id" => id}, socket) do
-    place = get_place_from_search_results(id, socket)
-    place_id = "#{place.latitude},#{place.longitude}"
+  def handle_event(
+        "add_search_result_to_saved_places",
+        %{"search_result_id" => search_result_id},
+        socket
+      ) do
+    item = get_item_from_search_results(search_result_id, socket)
+    item_location_id = "#{item.latitude},#{item.longitude}"
     saved_places = socket.assigns.saved_places
-    is_already_saved? = Enum.any?(saved_places, fn p -> p.id == place_id end)
+    is_already_saved? = Enum.any?(saved_places, fn p -> p.location_id == item_location_id end)
 
     case is_already_saved? do
       true ->
@@ -111,8 +115,8 @@ defmodule HimmelWeb.PlacesLive do
 
       false ->
         place_with_weather =
-          place
-          |> Places.create_place_view_from_search_result()
+          item
+          |> Places.create_place_from_search_result()
           |> Weather.get_weather()
 
         if socket.assigns[:current_user] do
@@ -134,8 +138,9 @@ defmodule HimmelWeb.PlacesLive do
     end
   end
 
-  def handle_event("remove_place", %{"id" => id}, socket) do
-    updated_places = Enum.reject(socket.assigns.saved_places, fn p -> p.id == id end)
+  def handle_event("remove_place", %{"location_id" => location_id}, socket) do
+    updated_places =
+      Enum.reject(socket.assigns.saved_places, fn p -> p.location_id == location_id end)
 
     if socket.assigns[:current_user] do
       # TODO: remove place from user's saved places
@@ -148,8 +153,8 @@ defmodule HimmelWeb.PlacesLive do
     {:noreply, assign(socket, saved_places: updated_places)}
   end
 
-  def handle_event("set_main_weather", %{"id" => id}, socket) do
-    place = Enum.find(socket.assigns.saved_places, fn p -> p.id == id end)
+  def handle_event("set_main_weather", %{"location_id" => location_id}, socket) do
+    place = Enum.find(socket.assigns.saved_places, fn p -> p.location_id == location_id end)
     send(self(), {:set_main_weather, place})
     {:noreply, socket}
   end
@@ -160,7 +165,7 @@ defmodule HimmelWeb.PlacesLive do
       id={@id}
       phx-target={@myself}
       phx-click="set_main_weather"
-      phx-value-id={@place.id}
+      phx-value-location_id={@place.location_id}
       class="flex justify-between items-center rounded-xl bg-red-dark py-3.5 px-4 cursor-pointer"
     >
       <div class="flex flex-col">
@@ -170,7 +175,7 @@ defmodule HimmelWeb.PlacesLive do
           class="cursor-pointer text-red-light text-left h-6 w-6"
           phx-target={@myself}
           phx-click="remove_place"
-          phx-value-id={@place.id}
+          phx-value-location_id={@place.location_id}
         >
           <.icon_trash />
         </button>
@@ -180,8 +185,8 @@ defmodule HimmelWeb.PlacesLive do
           <%= @place.weather.current.temperature %>&deg;
         </span>
         <div class="flex justify-end gap-5 font-semibold">
-          <h4>L: <%= List.first(@place.weather.daily)[:temperature][:low] %>&deg;</h4>
-          <h4>H: <%= List.first(@place.weather.daily)[:temperature][:high] %>&deg;</h4>
+          <h4>L: <%= List.first(@place.weather.daily).temperature.low %>&deg;</h4>
+          <h4>H: <%= List.first(@place.weather.daily).temperature.high %>&deg;</h4>
         </div>
       </div>
     </div>
@@ -280,9 +285,9 @@ defmodule HimmelWeb.PlacesLive do
     """
   end
 
-  defp get_place_from_search_results(place_id, socket) do
+  defp get_item_from_search_results(item_id, socket) do
     Enum.find(socket.assigns[:search_results], fn result ->
-      result.id == String.to_integer(place_id)
+      result.id == String.to_integer(item_id)
     end)
   end
 end
