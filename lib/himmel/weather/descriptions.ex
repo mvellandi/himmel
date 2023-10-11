@@ -1,8 +1,16 @@
 defmodule Himmel.Weather.Descriptions do
+  alias WeatherInfo.Description
+
   def get_description(weather_code, day_or_night) do
-    all()
-    |> Map.get(to_string(weather_code))
-    |> Map.get(day_or_night)
+    description =
+      all()
+      |> Map.get(to_string(weather_code))
+      |> Map.get(day_or_night)
+
+    %Description{
+      text: description.text,
+      image: description.image
+    }
   end
 
   def all do
