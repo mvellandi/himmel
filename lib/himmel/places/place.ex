@@ -2,14 +2,13 @@ defmodule Himmel.Places.Place do
   use Ecto.Schema
   import Ecto.Changeset
   alias Himmel.Places.Coordinates
-  alias Himmel.Weather.WeatherInfo
 
   embedded_schema do
     field :name, :string
     field :custom_name, :string
     embeds_one :coordinates, Coordinates
     field :location_id, :string
-    embeds_one :weather, WeatherInfo
+    field :weather, :map, virtual: true
   end
 
   def changeset(place, attrs) do
