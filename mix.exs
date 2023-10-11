@@ -9,7 +9,8 @@ defmodule Himmel.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      compilers: [:domo_compiler] ++ Mix.compilers()
     ]
   end
 
@@ -52,7 +53,8 @@ defmodule Himmel.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:ipinfo, "~> 1.0"},
-      {:tz, "~> 0.26.2"}
+      {:tz, "~> 0.26.2"},
+      {:domo, "~> 1.5"}
     ]
   end
 

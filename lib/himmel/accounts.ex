@@ -8,6 +8,16 @@ defmodule Himmel.Accounts do
 
   alias Himmel.Accounts.{User, UserToken, UserNotifier}
 
+  ## Manage User Saved Places
+
+  @doc """
+  Adds a place to a user's saved places.
+  """
+  def update_user_places(user, places) do
+    User.places_changeset(user, places)
+    |> Repo.update()
+  end
+
   ## Database getters
 
   @doc """
