@@ -80,4 +80,4 @@ config :swoosh, :api_client, false
 
 # For IP Info
 config :himmel,
-  my_location: {"Hamburg", %{latitude: 53.5488, longitude: 9.9872}}
+  user_location: {"Hamburg", %{latitude: 53.5488, longitude: 9.9872}}

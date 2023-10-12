@@ -23,10 +23,10 @@ defmodule Himmel.Places do
 
   @doc "Create a %Place{} from user's IP details. Defaults to a static location when in a dev environment, otherwise uses the user's IP info in the details argument"
   def create_place_from_ip_details(details) do
-    my_location = Application.get_env(:himmel, :my_location)
+    user_location = Application.get_env(:himmel, :user_location)
 
     {name, coordinates} =
-      case my_location do
+      case user_location do
         nil ->
           {details.city, %Coordinates{latitude: details.latitude, longitude: details.longitude}}
 

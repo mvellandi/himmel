@@ -51,22 +51,22 @@ defmodule HimmelWeb.PlacesLive do
         <%= if is_nil(@search_results) do %>
           <%!-- MY LOCATION (CUSTOM SIZE) --%>
           <div
-            id="myLocation"
-            phx-click="set_main_weather_to_my_location"
+            id="userLocation"
+            phx-click="set_main_weather_to_user_location"
             class="flex justify-between items-center rounded-xl bg-red-dark py-3.5 px-4 cursor-pointer"
           >
             <div class="flex flex-col">
               <h2 class="text-2xl font-bold leading-none">My Location</h2>
-              <h3 class="font-semibold pb-4 pt-1"><%= @my_location.name %></h3>
-              <h4 class="font-semibold"><%= @my_location.weather.current.description.text %></h4>
+              <h3 class="font-semibold pb-4 pt-1"><%= @user_location.name %></h3>
+              <h4 class="font-semibold"><%= @user_location.weather.current.description.text %></h4>
             </div>
             <div class="flex flex-col h-full justify-between items-end">
               <span class="text-5xl font-light leading-[0.9]">
-                <%= @my_location.weather.current.temperature %>&deg;
+                <%= @user_location.weather.current.temperature %>&deg;
               </span>
               <div class="flex justify-end gap-5 font-semibold">
-                <h4>L: <%= List.first(@my_location.weather.daily).temperature.low %>&deg;</h4>
-                <h4>L: <%= List.first(@my_location.weather.daily).temperature.high %>&deg;</h4>
+                <h4>L: <%= List.first(@user_location.weather.daily).temperature.low %>&deg;</h4>
+                <h4>L: <%= List.first(@user_location.weather.daily).temperature.high %>&deg;</h4>
               </div>
             </div>
           </div>
