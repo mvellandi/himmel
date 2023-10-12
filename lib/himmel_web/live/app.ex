@@ -1,14 +1,13 @@
 defmodule HimmelWeb.AppLive do
   use HimmelWeb, :live_view
-  alias Himmel.Weather
-  alias Himmel.Places
   alias Himmel.Places.Place
+  alias Himmel.Weather
   alias HimmelWeb.Utils
   alias HimmelWeb.{MainLive, PlacesLive, SettingsLive}
 
   @doc """
   MAIN shows data for the current PLACE. If there's a user session or authenticated user's places and history,
-  the last loaded place is shown. Otherwise, the user's IP is used to get the current place and weather.
+  the last loaded place is shown. Otherwise, the user's IP is used to get the current location and weather.
   """
   def mount(_params, _session, socket) do
     # if connected?(socket) do
@@ -16,10 +15,7 @@ defmodule HimmelWeb.AppLive do
     # end
     current_user = socket.assigns.current_user
 
-    user_location_weather =
-      Utils.get_user_ip_details_from_socket(socket)
-      |> Places.create_place_from_ip_details()
-      |> Weather.get_weather()
+    user_location_weather = Utils.get_user_location_weather(socket)
 
     {saved_places, main_weather} =
       if current_user do
@@ -27,18 +23,17 @@ defmodule HimmelWeb.AppLive do
         # IO.inspect(current_user, label: "current user")
         saved_places = current_user.places
 
-        _last_active_place =
+        active_place =
           case current_user.active_place_id do
             nil ->
               user_location_weather
 
             active_place_id ->
               saved_places
-              |> Enum.filter(fn p -> p.id == active_place_id end)
+              |> Enum.filter(fn p -> p.location_id == active_place_id end)
           end
 
-        # TODO: get weather for last active place
-        # weather_for_last_active_place = Weather.get_weather(last_active_place) ??
+        active_place_weather = Weather.get_weather(active_place)
         {saved_places, prepare_main_weather(user_location_weather)}
       else
         {nil, prepare_main_weather(user_location_weather)}
