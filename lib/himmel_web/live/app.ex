@@ -1,7 +1,5 @@
 defmodule HimmelWeb.AppLive do
   use HimmelWeb, :live_view
-  alias Himmel.Places.Place
-  alias Himmel.Weather
   alias HimmelWeb.Utils
   alias HimmelWeb.{MainLive, PlacesLive, SettingsLive}
 
@@ -13,41 +11,14 @@ defmodule HimmelWeb.AppLive do
     # if connected?(socket) do
     #   HimmelWeb.Endpoint.subscribe("places")
     # end
-    current_user = socket.assigns.current_user
-
-    user_location_weather = Utils.get_user_location_weather(socket)
-
-    {saved_places, main_weather} =
-      if current_user do
-        # TODO: get user's last loaded place instead of IP, and have the Weather genserver get the weather for that place, user's location, and user's other saved places, otherwise get current weather from user's IP
-        # IO.inspect(current_user, label: "current user")
-        saved_places = current_user.places
-
-        active_place =
-          case current_user.active_place_id do
-            nil ->
-              user_location_weather
-
-            active_place_id ->
-              saved_places
-              |> Enum.filter(fn p -> p.location_id == active_place_id end)
-          end
-
-        active_place_weather = Weather.get_weather(active_place)
-        {saved_places, prepare_main_weather(user_location_weather)}
-      else
-        {nil, prepare_main_weather(user_location_weather)}
-      end
-
-    # TODO: if the user has a last loaded place, we still need to get the weather for my_location and assign it accordingly, so it shows up in the places list
-    # my_location_weather = # get weather for my_location
-    # IO.inspect(user_location_weather, label: "user_location_weather")
+    current_user = socket.assigns.current_user || nil
+    data = Utils.app_data_init(current_user, socket)
 
     {:ok,
      assign(socket,
-       main_weather: main_weather,
-       my_location: user_location_weather,
-       saved_places: saved_places,
+       main_weather: data.main_weather,
+       current_location: data.current_location,
+       saved_places: data.saved_places,
        screen: :main
      )}
   end
@@ -95,7 +66,7 @@ defmodule HimmelWeb.AppLive do
           module={PlacesLive}
           id="places"
           screen={@screen}
-          my_location={@my_location}
+          current_location={@current_location}
           current_user={assigns.current_user}
         />
         <%!-- SETTINGS --%>
@@ -120,9 +91,9 @@ defmodule HimmelWeb.AppLive do
     {:noreply, assign(socket, screen: screen)}
   end
 
-  def handle_event("set_main_weather_to_my_location", _, socket) do
-    my_location = socket.assigns.my_location
-    socket = assign(socket, main_weather: prepare_main_weather(my_location))
+  def handle_event("set_main_weather_to_current_location", _, socket) do
+    current_location = socket.assigns.current_location
+    socket = assign(socket, main_weather: Utils.prepare_main_weather(current_location))
     {:noreply, socket}
   end
 
@@ -130,22 +101,6 @@ defmodule HimmelWeb.AppLive do
   # end
 
   def handle_info({:set_main_weather, place}, socket) do
-    {:noreply, assign(socket, main_weather: prepare_main_weather(place))}
-  end
-
-  defp prepare_main_weather(
-         %Place{name: name, weather: %{current: current, daily: daily, hourly: hourly}} = place
-       ) do
-    todays_temp_range = List.first(daily) |> Map.get(:temperature)
-
-    %{
-      name: name,
-      temperature: current.temperature,
-      description_text: current.description.text,
-      high: todays_temp_range.high,
-      low: todays_temp_range.low,
-      hours: hourly,
-      days: daily
-    }
+    {:noreply, assign(socket, main_weather: Utils.prepare_main_weather(place))}
   end
 end
