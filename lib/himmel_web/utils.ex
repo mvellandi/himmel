@@ -1,15 +1,20 @@
 defmodule HimmelWeb.Utils do
+  alias Phoenix.Component
+  alias Phoenix.LiveView, as: LV
   alias Himmel.Accounts.User
   alias Himmel.Services.{IP, Places}
   alias Himmel.Places
   alias Himmel.Places.Place
   alias Himmel.Weather
 
-  def app_data_init(%User{} = current_user, socket) do
+  def app_data_init(
+        %User{places: saved_places, active_place_id: active_place_id},
+        socket
+      ) do
     current_location_weather = get_current_location_weather(socket)
 
     active_place =
-      Enum.find(current_user.places, fn p -> p.location_id == current_user.active_place_id end) ||
+      Enum.find(saved_places, fn p -> p.location_id == active_place_id end) ||
         nil
 
     main_weather =
@@ -22,11 +27,20 @@ defmodule HimmelWeb.Utils do
           |> prepare_main_weather()
       end
 
-    %{
-      current_location: current_location_weather,
-      main_weather: main_weather,
-      saved_places: current_user.places
-    }
+    _socket =
+      case saved_places do
+        [] ->
+          Component.assign(socket, saved_places: [])
+
+        places when is_list(places) ->
+          LV.assign_async(socket, :saved_places, fn ->
+            {:ok, %{saved_places: Enum.map(places, fn p -> Weather.get_weather(p) end)}}
+          end)
+      end
+      |> Component.assign(
+        main_weather: main_weather,
+        current_location: current_location_weather
+      )
   end
 
   def app_data_init(nil, socket) do
@@ -34,11 +48,12 @@ defmodule HimmelWeb.Utils do
 
     main_weather = prepare_main_weather(current_location_weather)
 
-    %{
-      current_location: current_location_weather,
-      main_weather: main_weather,
-      saved_places: []
-    }
+    _socket =
+      Component.assign(socket,
+        main_weather: main_weather,
+        current_location: current_location_weather,
+        saved_places: []
+      )
   end
 
   defp get_current_location_weather(socket) do

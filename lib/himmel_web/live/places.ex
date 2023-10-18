@@ -8,7 +8,7 @@ defmodule HimmelWeb.PlacesLive do
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(search: "", search_results: nil, saved_places: [])}
+     |> assign(search: "", search_results: nil)}
   end
 
   def render(assigns) do
@@ -71,9 +71,16 @@ defmodule HimmelWeb.PlacesLive do
             </div>
           </div>
           <%!-- SAVED PLACES --%>
-          <%= @saved_places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
-            <.place_card id={"placeCard-#{index}"} place={place} myself={@myself} />
-          <% end) %>
+          <.async_result :let={places} assign={@saved_places}>
+            <:loading>Loading saved places...</:loading>
+            <:failed :let={reason}><%= reason %></:failed>
+
+            <div :if={places}>
+              <%= places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
+                <.place_card id={"placeCard-#{index}"} place={place} myself={@myself} />
+              <% end) %>
+            </div>
+          </.async_result>
         <% end %>
       </div>
     </div>
@@ -166,7 +173,7 @@ defmodule HimmelWeb.PlacesLive do
       phx-target={@myself}
       phx-click="set_main_weather"
       phx-value-location_id={@place.location_id}
-      class="flex justify-between items-center rounded-xl bg-red-dark py-3.5 px-4 cursor-pointer"
+      class="flex justify-between rounded-xl bg-red-dark py-3.5 px-4 cursor-pointer"
     >
       <div class="flex flex-col">
         <h2 class="text-2xl font-bold leading-none"><%= @place.name %></h2>
@@ -180,7 +187,7 @@ defmodule HimmelWeb.PlacesLive do
           <.icon_trash />
         </button>
       </div>
-      <div class="flex flex-col h-full justify-between items-end">
+      <div class="flex flex-col justify-between items-end">
         <span class="text-5xl font-light leading-[0.9]">
           <%= @place.weather.current.temperature %>&deg;
         </span>

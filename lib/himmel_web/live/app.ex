@@ -12,15 +12,9 @@ defmodule HimmelWeb.AppLive do
     #   HimmelWeb.Endpoint.subscribe("places")
     # end
     current_user = socket.assigns.current_user || nil
-    data = Utils.app_data_init(current_user, socket)
+    socket = Utils.app_data_init(current_user, socket)
 
-    {:ok,
-     assign(socket,
-       main_weather: data.main_weather,
-       current_location: data.current_location,
-       saved_places: data.saved_places,
-       screen: :main
-     )}
+    {:ok, assign(socket, screen: :main)}
   end
 
   def render(assigns) do
@@ -68,6 +62,7 @@ defmodule HimmelWeb.AppLive do
           screen={@screen}
           current_location={@current_location}
           current_user={assigns.current_user}
+          saved_places={@saved_places}
         />
         <%!-- SETTINGS --%>
         <.live_component
