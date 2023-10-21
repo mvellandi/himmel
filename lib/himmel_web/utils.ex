@@ -1,6 +1,7 @@
 defmodule HimmelWeb.Utils do
   alias Phoenix.Component
   alias Phoenix.LiveView, as: LV
+  alias Phoenix.LiveView.AsyncResult
   alias Himmel.Accounts.User
   alias Himmel.Services.{IP, Places}
   alias Himmel.Places
@@ -30,7 +31,7 @@ defmodule HimmelWeb.Utils do
     _socket =
       case saved_places do
         [] ->
-          Component.assign(socket, saved_places: [])
+          Component.assign(socket, saved_places: %AsyncResult{ok?: true, result: []})
 
         places when is_list(places) ->
           LV.assign_async(socket, :saved_places, fn ->
@@ -52,7 +53,7 @@ defmodule HimmelWeb.Utils do
       Component.assign(socket,
         main_weather: main_weather,
         current_location: current_location_weather,
-        saved_places: []
+        saved_places: %AsyncResult{ok?: true, result: []}
       )
   end
 

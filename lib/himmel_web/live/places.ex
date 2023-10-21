@@ -1,4 +1,5 @@
 defmodule HimmelWeb.PlacesLive do
+  alias Phoenix.LiveView.AsyncResult
   use HimmelWeb, :live_component
   alias Himmel.Services
   alias Himmel.Weather
@@ -71,16 +72,7 @@ defmodule HimmelWeb.PlacesLive do
             </div>
           </div>
           <%!-- SAVED PLACES --%>
-          <.async_result :let={places} assign={@saved_places}>
-            <:loading>Loading saved places...</:loading>
-            <:failed :let={reason}><%= reason %></:failed>
-
-            <div :if={places}>
-              <%= places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
-                <.place_card id={"placeCard-#{index}"} place={place} myself={@myself} />
-              <% end) %>
-            </div>
-          </.async_result>
+          <.saved_places saved_places={@saved_places} myself={@myself} />
         <% end %>
       </div>
     </div>
@@ -113,8 +105,11 @@ defmodule HimmelWeb.PlacesLive do
       ) do
     item = get_item_from_search_results(search_result_id, socket)
     item_location_id = "#{item.latitude},#{item.longitude}"
-    saved_places = socket.assigns.saved_places
-    is_already_saved? = Enum.any?(saved_places, fn p -> p.location_id == item_location_id end)
+    async_saved_places = socket.assigns.saved_places
+    saved_places_list = async_saved_places.result
+
+    is_already_saved? =
+      Enum.any?(saved_places_list, fn p -> p.location_id == item_location_id end)
 
     case is_already_saved? do
       true ->
@@ -140,14 +135,20 @@ defmodule HimmelWeb.PlacesLive do
          assign(socket,
            search: "",
            search_results: nil,
-           saved_places: [place_with_weather | saved_places]
+           saved_places: %AsyncResult{
+             async_saved_places
+             | result: [place_with_weather | saved_places_list]
+           }
          )}
     end
   end
 
   def handle_event("remove_place", %{"location_id" => location_id}, socket) do
+    async_saved_places = socket.assigns.saved_places
+    saved_places = async_saved_places.result
+
     updated_places =
-      Enum.reject(socket.assigns.saved_places, fn p -> p.location_id == location_id end)
+      Enum.reject(saved_places, fn p -> p.location_id == location_id end)
 
     if socket.assigns[:current_user] do
       # TODO: remove place from user's saved places
@@ -157,13 +158,68 @@ defmodule HimmelWeb.PlacesLive do
       )
     end
 
-    {:noreply, assign(socket, saved_places: updated_places)}
+    {:noreply,
+     assign(socket, saved_places: %AsyncResult{async_saved_places | result: updated_places})}
   end
 
   def handle_event("set_main_weather", %{"location_id" => location_id}, socket) do
-    place = Enum.find(socket.assigns.saved_places, fn p -> p.location_id == location_id end)
+    place =
+      Enum.find(socket.assigns.saved_places.result, fn p -> p.location_id == location_id end)
+
     send(self(), {:set_main_weather, place})
     {:noreply, socket}
+  end
+
+  def saved_places(assigns) do
+    case assigns.saved_places do
+      %AsyncResult{} ->
+        ~H"""
+        <.async_result :let={places} assign={@saved_places}>
+          <:loading>Loading saved places...</:loading>
+          <:failed :let={reason}><%= reason %></:failed>
+
+          <%= if places !== [] do %>
+            <%= places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
+              <.place_card id={"placeCard-#{index}"} place={place} myself={@myself} />
+            <% end) %>
+          <% else %>
+            <div class="flex justify-center items-center rounded-xl bg-red-dark py-3.5 px-4">
+              <h2 class="text-2xl font-bold">No saved places</h2>
+            </div>
+          <% end %>
+        </.async_result>
+        """
+
+        # [] ->
+        #   ~H"""
+        #   <div class="flex justify-center items-center rounded-xl bg-red-dark py-3.5 px-4">
+        #     <h2 class="text-2xl font-bold">No saved places</h2>
+        #   </div>
+        #   """
+
+        # places when is_list(places) ->
+        #   ~H"""
+        #   <div id="savedPlaces" class="flex flex-col space-y-3">
+        #     <%= @saved_places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
+        #       <.place_card id={"placeCard-#{index}"} place={place} myself={@myself} />
+        #     <% end) %>
+        #   </div>
+        #   """
+    end
+
+    # ~H"""
+    # <div id="savedPlaces" class="flex flex-col space-y-3">
+    #   <%= if @saved_places == [] do %>
+    #     <div class="flex justify-center items-center rounded-xl bg-red-dark py-3.5 px-4">
+    #       <h2 class="text-2xl font-bold">No saved places</h2>
+    #     </div>
+    #   <% else %>
+    #     <%= @saved_places |> Enum.map(fn place -> %>
+    #       <.place_card place={place} myself={@myself} />
+    #     <% end) %>
+    #   <% end %>
+    # </div>
+    # """
   end
 
   def place_card(assigns) do
