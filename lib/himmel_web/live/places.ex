@@ -171,55 +171,22 @@ defmodule HimmelWeb.PlacesLive do
   end
 
   def saved_places(assigns) do
-    case assigns.saved_places do
-      %AsyncResult{} ->
-        ~H"""
-        <.async_result :let={places} assign={@saved_places}>
-          <:loading>Loading saved places...</:loading>
-          <:failed :let={reason}><%= reason %></:failed>
+    ~H"""
+    <.async_result :let={places} assign={@saved_places}>
+      <:loading>Loading saved places...</:loading>
+      <:failed :let={reason}><%= reason %></:failed>
 
-          <%= if places !== [] do %>
-            <%= places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
-              <.place_card id={"placeCard-#{index}"} place={place} myself={@myself} />
-            <% end) %>
-          <% else %>
-            <div class="flex justify-center items-center rounded-xl bg-red-dark py-3.5 px-4">
-              <h2 class="text-2xl font-bold">No saved places</h2>
-            </div>
-          <% end %>
-        </.async_result>
-        """
-
-        # [] ->
-        #   ~H"""
-        #   <div class="flex justify-center items-center rounded-xl bg-red-dark py-3.5 px-4">
-        #     <h2 class="text-2xl font-bold">No saved places</h2>
-        #   </div>
-        #   """
-
-        # places when is_list(places) ->
-        #   ~H"""
-        #   <div id="savedPlaces" class="flex flex-col space-y-3">
-        #     <%= @saved_places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
-        #       <.place_card id={"placeCard-#{index}"} place={place} myself={@myself} />
-        #     <% end) %>
-        #   </div>
-        #   """
-    end
-
-    # ~H"""
-    # <div id="savedPlaces" class="flex flex-col space-y-3">
-    #   <%= if @saved_places == [] do %>
-    #     <div class="flex justify-center items-center rounded-xl bg-red-dark py-3.5 px-4">
-    #       <h2 class="text-2xl font-bold">No saved places</h2>
-    #     </div>
-    #   <% else %>
-    #     <%= @saved_places |> Enum.map(fn place -> %>
-    #       <.place_card place={place} myself={@myself} />
-    #     <% end) %>
-    #   <% end %>
-    # </div>
-    # """
+      <%= if places !== [] do %>
+        <%= places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
+          <.place_card id={"placeCard-#{index}"} place={place} myself={@myself} />
+        <% end) %>
+      <% else %>
+        <div class="flex justify-center items-center rounded-xl bg-red-dark py-3.5 px-4">
+          <h2 class="text-2xl font-bold">No saved places</h2>
+        </div>
+      <% end %>
+    </.async_result>
+    """
   end
 
   def place_card(assigns) do
