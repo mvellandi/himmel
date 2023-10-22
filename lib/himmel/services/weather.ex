@@ -42,12 +42,8 @@ defmodule Himmel.Services.Weather do
           |> prepare_daily_weather()
           |> prepare_hourly_weather(36)
 
-        # IO.inspect(label: "weather_info")
-
         place
         |> Map.put(:weather, weather_info)
-
-      # |> IO.inspect()
 
       {:error, reason} ->
         IO.inspect(reason, label: "Web request error")

@@ -36,25 +36,5 @@ defmodule Himmel.Services.Geocoding do
       {:error, reason} ->
         IO.inspect(reason, label: "Web request error")
     end
-
-    #   case response do
-    #     _ ->
-    #       Jason.decode!(response)
-    #       |> Map.get("results")
-    #       |> Enum.map(fn result ->
-    #         %{
-    #           name: result["name"],
-    #           region: result["admin1"],
-    #           country: result["country"],
-    #           latitude: result["latitude"],
-    #           longitude: result["longitude"],
-    #           id: result["id"]
-    #         }
-    #       end)
-
-    #     {:error, reason} ->
-    #       # IO.inspect(reason, label: "Geocoding request error")
-    #       []
-    #   end
   end
 end
