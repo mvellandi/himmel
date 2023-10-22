@@ -1,6 +1,6 @@
 defmodule HimmelWeb.PlacesLive do
-  alias Phoenix.LiveView.AsyncResult
   use HimmelWeb, :live_component
+  alias Phoenix.LiveView.AsyncResult
   alias Himmel.Services
   alias Himmel.Weather
   alias Himmel.Places
@@ -15,7 +15,7 @@ defmodule HimmelWeb.PlacesLive do
   def render(assigns) do
     ~H"""
     <div
-      id="places"
+      id={@id}
       class={"#{if @screen == :places, do: "flex", else: "hidden md:flex"} flex-col gap-3 pt-[120px] w-full max-w-[420px]"}
     >
       <h1 class="text-4xl font-bold ml-4">Places</h1>
@@ -157,6 +157,8 @@ defmodule HimmelWeb.PlacesLive do
         "remove place from user's saved places, and if there's place has no users, then remove place in DB"
       )
     end
+
+    # send(self(), {:place_removed, location_id})
 
     {:noreply,
      assign(socket, saved_places: %AsyncResult{async_saved_places | result: updated_places})}
