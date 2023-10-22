@@ -12,8 +12,11 @@ defmodule HimmelWeb.Utils do
         %User{places: saved_places, active_place_id: active_place_id},
         socket
       ) do
+    # PLACES AND POSSIBLY MAIN WEATHER
     current_location_weather = get_current_location_weather(socket)
 
+    # MAIN WEATHER
+    # This is for setting the main weather to either the last loaded weather or the current location weather
     active_place =
       Enum.find(saved_places, fn p -> p.location_id == active_place_id end) ||
         nil
@@ -28,6 +31,7 @@ defmodule HimmelWeb.Utils do
           |> prepare_main_weather()
       end
 
+    # SETS ASSIGNS FOR BOTH MAIN AND PLACES LIVE COMPONENTS
     _socket =
       case saved_places do
         [] ->
