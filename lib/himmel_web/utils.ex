@@ -9,9 +9,7 @@ defmodule HimmelWeb.Utils do
 
   def places_weather_data_init(socket) do
     current_location_weather = get_current_location_weather(socket)
-
     current_user = socket.assigns.current_user
-
     saved_places = (current_user && current_user.places) || []
 
     active_place =
@@ -88,11 +86,8 @@ defmodule HimmelWeb.Utils do
         |> Weather.get_weather()
 
       if socket.assigns[:current_user] do
-        # TODO: see if place already exists in DB
-        # if not, then save place in DB
-        # then add place to user's saved places
-
-        IO.puts("save place in DB (if not already) and add to user's saved places")
+        # IO.puts("save place to user's saved places, if not alreaqdy saved")
+        # Places.save_place(place_with_weather, socket.assigns[:current_user])
       end
 
       Component.assign(socket,
