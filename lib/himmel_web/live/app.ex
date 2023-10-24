@@ -2,9 +2,7 @@ defmodule HimmelWeb.AppLive do
   use HimmelWeb, :live_view
   alias HimmelWeb.Utils
   alias Himmel.Services
-  import HimmelWeb.Components.Main
-  import HimmelWeb.Components.Places
-  import HimmelWeb.Components.Settings
+  import HimmelWeb.Components.{Main, Places, Settings}
 
   @doc """
   MAIN shows data for the current PLACE. If there's a user session or authenticated user's places and history,
