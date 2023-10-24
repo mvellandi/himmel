@@ -6,7 +6,7 @@ defmodule HimmelWeb.Components.Places do
     <div class={"#{if @screen == :places, do: "flex", else: "hidden md:flex"} flex-col gap-3 pt-[120px] w-full max-w-[420px]"}>
       <h1 class="text-4xl font-bold ml-4">Places</h1>
       <%!-- SEARCH --%>
-      <.search_bar search={@search} myself={@myself} />
+      <.search_bar search={@search} />
       <%!-- SEARCH RESULT LIST --%>
       <div id="search-results">
         <%= if @search_results do %>
@@ -19,7 +19,6 @@ defmodule HimmelWeb.Components.Places do
               <%= @search_results |> Enum.with_index |> Enum.map(fn({result, index}) -> %>
                 <li
                   id={"result-#{index}"}
-                  phx-target={@myself}
                   phx-click="save_search_result"
                   phx-value-search_result_id={result.id}
                 >
@@ -58,7 +57,7 @@ defmodule HimmelWeb.Components.Places do
             </div>
           </div>
           <%!-- SAVED PLACES --%>
-          <.saved_places saved_places={@saved_places} myself={@myself} />
+          <.saved_places saved_places={@saved_places} />
         <% end %>
       </div>
     </div>
@@ -73,7 +72,7 @@ defmodule HimmelWeb.Components.Places do
 
       <%= if places !== [] do %>
         <%= places |> Enum.with_index |> Enum.map(fn({place, index}) -> %>
-          <.place_card id={"placeCard-#{index}"} place={place} myself={@myself} />
+          <.place_card id={"placeCard-#{index}"} place={place} />
         <% end) %>
       <% else %>
         <div class="flex justify-center items-center rounded-xl bg-red-dark py-3.5 px-4">
@@ -88,7 +87,6 @@ defmodule HimmelWeb.Components.Places do
     ~H"""
     <div
       id={@id}
-      phx-target={@myself}
       phx-click="set_main_weather"
       phx-value-location_id={@place.location_id}
       class="flex justify-between rounded-xl bg-red-dark py-3.5 px-4 cursor-pointer"
@@ -98,7 +96,6 @@ defmodule HimmelWeb.Components.Places do
         <h3 class="font-semibold pb-4"><%= @place.weather.current.description.text %></h3>
         <button
           class="cursor-pointer text-red-light text-left h-6 w-6"
-          phx-target={@myself}
           phx-click="delete_place"
           phx-value-location_id={@place.location_id}
         >
@@ -121,7 +118,7 @@ defmodule HimmelWeb.Components.Places do
   def search_bar(assigns) do
     ~H"""
     <search>
-      <form phx-submit="search_places" phx-change="set_search" phx-target={@myself}>
+      <form phx-submit="search_places" phx-change="set_search">
         <div class="inline-flex items-center justify-between w-full h-10 rounded-xl bg-red-dark text-red-light py-2 pl-2">
           <div class="relative w-full">
             <input
@@ -136,7 +133,6 @@ defmodule HimmelWeb.Components.Places do
             <%= if @search !== "" do %>
               <span
                 phx-click="clear_search"
-                phx-target={@myself}
                 class="absolute right-0 top-0 h-full w-8 bg-red-dark flex place-content-center cursor-pointer"
               >
                 <.icon_x_circle />
