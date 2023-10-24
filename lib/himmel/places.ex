@@ -1,9 +1,16 @@
 defmodule Himmel.Places do
+  alias Himmel.Repo
+  alias Himmel.Accounts.User
+  alias Himmel.Places.{Place, Coordinates}
+
   @moduledoc """
-  The Places context..
+  The Places context is responsible for managing the user's saved places and the current location.
   """
 
-  alias Himmel.Places.{Place, Coordinates}
+  @doc "Add a place to the user's saved places."
+  # def save_place_to_user(user, attrs) do
+  #   #
+  # end
 
   def create_place_from_search_result(%{
         name: name,
