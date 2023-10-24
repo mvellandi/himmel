@@ -13,7 +13,7 @@ defmodule HimmelWeb.AppLive do
     #   HimmelWeb.Endpoint.subscribe("places")
     # end
     current_user = socket.assigns.current_user || nil
-    socket = Utils.app_data_init(current_user, socket)
+    socket = Utils.app_data_init(socket, current_user)
 
     {:ok, assign(socket, screen: :main)}
   end

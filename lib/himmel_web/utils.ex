@@ -9,8 +9,8 @@ defmodule HimmelWeb.Utils do
   alias Himmel.Weather
 
   def app_data_init(
-        %User{places: saved_places, active_place_id: active_place_id},
-        socket
+        socket,
+        %User{places: saved_places, active_place_id: active_place_id}
       ) do
     # PLACES AND POSSIBLY MAIN WEATHER
     current_location_weather = get_current_location_weather(socket)
@@ -48,7 +48,7 @@ defmodule HimmelWeb.Utils do
       )
   end
 
-  def app_data_init(nil, socket) do
+  def app_data_init(socket, nil) do
     current_location_weather = get_current_location_weather(socket)
 
     main_weather = prepare_main_weather(current_location_weather)
