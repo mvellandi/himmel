@@ -1,5 +1,6 @@
 defmodule HimmelWeb.AppLive do
   use HimmelWeb, :live_view
+  alias Phoenix.LiveView.AsyncResult
   alias HimmelWeb.Utils
   alias HimmelWeb.{MainLive, PlacesLive, SettingsLive}
 
@@ -94,6 +95,16 @@ defmodule HimmelWeb.AppLive do
 
   # def handle_event(%Phoenix.PubSub.Broadcast{}) do
   # end
+
+  def handle_info({:save_place, location}, socket) do
+    updated_socket = Utils.maybe_save_place_and_set_to_main_weather(location, socket)
+    {:noreply, updated_socket}
+  end
+
+  def handle_info({:delete_place, location_id}, socket) do
+    updated_socket = Utils.delete_place_and_maybe_change_main_weather(location_id, socket)
+    {:noreply, updated_socket}
+  end
 
   def handle_info({:set_main_weather, place}, socket) do
     {:noreply, assign(socket, main_weather: Utils.prepare_main_weather(place))}
