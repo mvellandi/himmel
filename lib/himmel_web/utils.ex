@@ -61,7 +61,7 @@ defmodule HimmelWeb.Utils do
       )
   end
 
-  defp get_current_location_weather(socket) do
+  def get_current_location_weather(socket) do
     socket
     |> IP.get_user_ip()
     |> IP.get_ip_details()
@@ -84,5 +84,61 @@ defmodule HimmelWeb.Utils do
       hours: hourly,
       days: daily
     }
+  end
+
+  def maybe_save_place_and_set_to_main_weather(location, socket) do
+    async_saved_places = socket.assigns.saved_places
+    saved_places_list = async_saved_places.result
+
+    already_saved? =
+      Enum.any?(saved_places_list, fn p ->
+        p.location_id == "#{location.latitude},#{location.longitude}"
+      end)
+
+    if already_saved? do
+      socket
+    else
+      place_with_weather =
+        location
+        |> Places.create_place_from_search_result()
+        |> Weather.get_weather()
+
+      if socket.assigns[:current_user] do
+        # TODO: see if place already exists in DB
+        # if not, then save place in DB
+        # then add place to user's saved places
+
+        IO.puts("save place in DB (if not already) and add to user's saved places")
+      end
+
+      Component.assign(socket,
+        main_weather: prepare_main_weather(place_with_weather),
+        saved_places: %AsyncResult{
+          async_saved_places
+          | result: [place_with_weather | saved_places_list]
+        }
+      )
+    end
+  end
+
+  def delete_place_and_maybe_change_main_weather(location_id, socket) do
+    async_saved_places = socket.assigns.saved_places
+    saved_places_list = async_saved_places.result
+
+    updated_saved_places_list =
+      Enum.reject(saved_places_list, fn p -> p.location_id == location_id end)
+
+    if socket.assigns[:current_user] do
+      # TODO: remove place from user's saved places
+      # TODO: if place has no users, then remove place in DB
+      IO.puts(
+        "remove place from user's saved places, and if there's place has no users, then remove place in DB"
+      )
+    end
+
+    Component.assign(socket,
+      #  main_weather: Utils.prepare_main_weather(place),
+      saved_places: %AsyncResult{async_saved_places | result: updated_saved_places_list}
+    )
   end
 end
