@@ -2,24 +2,20 @@ defmodule HimmelWeb.Utils do
   alias Phoenix.Component
   alias Phoenix.LiveView, as: LV
   alias Phoenix.LiveView.AsyncResult
-  alias Himmel.Accounts.User
   alias Himmel.Services.{IP, Places}
   alias Himmel.Places
   alias Himmel.Places.Place
   alias Himmel.Weather
 
-  def app_data_init(
-        socket,
-        %User{places: saved_places, active_place_id: active_place_id}
-      ) do
-    # PLACES AND POSSIBLY MAIN WEATHER
+  def places_weather_data_init(socket) do
     current_location_weather = get_current_location_weather(socket)
 
-    # MAIN WEATHER
-    # This is for setting the main weather to either the last loaded weather or the current location weather
+    current_user = socket.assigns.current_user
+
+    saved_places = (current_user && current_user.places) || []
+
     active_place =
-      Enum.find(saved_places, fn p -> p.location_id == active_place_id end) ||
-        nil
+      Enum.find(saved_places, fn p -> p.location_id == current_user[:active_place_id] end)
 
     main_weather =
       case active_place do
@@ -31,8 +27,7 @@ defmodule HimmelWeb.Utils do
           |> prepare_main_weather()
       end
 
-    # SETS ASSIGNS FOR BOTH MAIN AND PLACES LIVE COMPONENTS
-    _socket =
+    saved_places_socket =
       case saved_places do
         [] ->
           Component.assign(socket, saved_places: %AsyncResult{ok?: true, result: []})
@@ -42,22 +37,11 @@ defmodule HimmelWeb.Utils do
             {:ok, %{saved_places: Enum.map(places, fn p -> Weather.get_weather(p) end)}}
           end)
       end
-      |> Component.assign(
+
+    _places_weather_socket =
+      Component.assign(saved_places_socket,
         main_weather: main_weather,
         current_location: current_location_weather
-      )
-  end
-
-  def app_data_init(socket, nil) do
-    current_location_weather = get_current_location_weather(socket)
-
-    main_weather = prepare_main_weather(current_location_weather)
-
-    _socket =
-      Component.assign(socket,
-        main_weather: main_weather,
-        current_location: current_location_weather,
-        saved_places: %AsyncResult{ok?: true, result: []}
       )
   end
 
