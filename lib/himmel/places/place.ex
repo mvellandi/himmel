@@ -11,7 +11,7 @@ defmodule Himmel.Places.Place do
     field :weather, :map, virtual: true
   end
 
-  def changeset(place, attrs) do
+  def changeset(%__MODULE__{} = place, attrs) do
     place
     |> cast(attrs, [:name, :custom_name])
     |> cast_embed(:coordinates, required: true)

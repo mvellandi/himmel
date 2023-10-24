@@ -9,11 +9,13 @@ defmodule HimmelWeb.Utils do
 
   def places_weather_data_init(socket) do
     current_location_weather = get_current_location_weather(socket)
-    current_user = socket.assigns.current_user
-    saved_places = (current_user && current_user.places) || []
+    current_user = socket.assigns[:current_user]
+    saved_places = if current_user, do: current_user.places, else: []
 
     active_place =
-      Enum.find(saved_places, fn p -> p.location_id == current_user[:active_place_id] end)
+      if current_user,
+        do: Enum.find(saved_places, fn p -> p.location_id == current_user.active_place_id end),
+        else: nil
 
     main_weather =
       case active_place do
@@ -69,6 +71,7 @@ defmodule HimmelWeb.Utils do
   end
 
   def maybe_save_place_and_set_to_main_weather(location, socket) do
+    current_user = socket.assigns[:current_user]
     async_saved_places = socket.assigns.saved_places
     saved_places_list = async_saved_places.result
 
@@ -76,6 +79,8 @@ defmodule HimmelWeb.Utils do
       Enum.any?(saved_places_list, fn p ->
         p.location_id == "#{location.latitude},#{location.longitude}"
       end)
+
+    # TODO: check also if already saved in DB as secondary check?
 
     if already_saved? do
       socket
@@ -85,9 +90,18 @@ defmodule HimmelWeb.Utils do
         |> Places.create_place_from_search_result()
         |> Weather.get_weather()
 
-      if socket.assigns[:current_user] do
-        # IO.puts("save place to user's saved places, if not alreaqdy saved")
-        # Places.save_place(place_with_weather, socket.assigns[:current_user])
+      if current_user do
+        IO.puts("save place to user's saved places, if not already saved")
+
+        new_place =
+          Map.from_struct(place_with_weather)
+          |> Map.update(:coordinates, nil, fn c -> Map.from_struct(c) end)
+
+        IO.inspect(new_place, label: "new_place")
+
+        Places.save_place_to_user(current_user, %{
+          places: [new_place | current_user.places]
+        })
       end
 
       Component.assign(socket,

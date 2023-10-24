@@ -8,9 +8,12 @@ defmodule Himmel.Places do
   """
 
   @doc "Add a place to the user's saved places."
-  # def save_place_to_user(user, attrs) do
-  #   #
-  # end
+  def save_place_to_user(user, attrs) do
+    %User{} =
+      user
+      |> User.places_changeset(attrs)
+      |> Repo.update()
+  end
 
   def create_place_from_search_result(%{
         name: name,
