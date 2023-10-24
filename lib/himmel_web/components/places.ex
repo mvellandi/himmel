@@ -1,20 +1,9 @@
-defmodule HimmelWeb.PlacesLive do
-  use HimmelWeb, :live_component
-  alias Himmel.Services
+defmodule HimmelWeb.Components.Places do
+  use HimmelWeb, :component
 
-  def update(assigns, socket) do
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(search: "", search_results: nil)}
-  end
-
-  def render(assigns) do
+  def places(assigns) do
     ~H"""
-    <div
-      id={@id}
-      class={"#{if @screen == :places, do: "flex", else: "hidden md:flex"} flex-col gap-3 pt-[120px] w-full max-w-[420px]"}
-    >
+    <div class={"#{if @screen == :places, do: "flex", else: "hidden md:flex"} flex-col gap-3 pt-[120px] w-full max-w-[420px]"}>
       <h1 class="text-4xl font-bold ml-4">Places</h1>
       <%!-- SEARCH --%>
       <.search_bar search={@search} myself={@myself} />
@@ -74,49 +63,6 @@ defmodule HimmelWeb.PlacesLive do
       </div>
     </div>
     """
-  end
-
-  def handle_event("search_places", %{"name" => name}, socket) do
-    socket =
-      assign(socket,
-        search: name,
-        search_results: Services.Geocoding.search_places(name)
-      )
-
-    {:noreply, socket}
-  end
-
-  def handle_event("set_search", %{"name" => name}, socket) do
-    socket = if name == "", do: assign(socket, search_results: nil), else: socket
-    {:noreply, assign(socket, search: name)}
-  end
-
-  def handle_event("clear_search", _, socket) do
-    {:noreply, assign(socket, search: "", search_results: nil)}
-  end
-
-  def handle_event("save_search_result", %{"search_result_id" => search_result_id}, socket) do
-    location =
-      Enum.find(socket.assigns[:search_results], fn result ->
-        result.id == String.to_integer(search_result_id)
-      end)
-
-    send(self(), {:save_place, location})
-
-    {:noreply, assign(socket, search: "", search_results: nil)}
-  end
-
-  def handle_event("delete_place", %{"location_id" => location_id}, socket) do
-    send(self(), {:delete_place, location_id})
-    {:noreply, socket}
-  end
-
-  def handle_event("set_main_weather", %{"location_id" => location_id}, socket) do
-    place =
-      Enum.find(socket.assigns.saved_places.result, fn p -> p.location_id == location_id end)
-
-    send(self(), {:set_main_weather, place})
-    {:noreply, socket}
   end
 
   def saved_places(assigns) do
