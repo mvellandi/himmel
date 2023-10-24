@@ -1,23 +1,9 @@
-defmodule HimmelWeb.PlacesLive do
-  use HimmelWeb, :live_component
-  alias Phoenix.LiveView.AsyncResult
-  alias Himmel.Services
-  alias Himmel.Weather
-  alias Himmel.Places
+defmodule HimmelWeb.Components.Places do
+  use HimmelWeb, :component
 
-  def update(assigns, socket) do
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(search: "", search_results: nil)}
-  end
-
-  def render(assigns) do
+  def places(assigns) do
     ~H"""
-    <div
-      id={@id}
-      class={"#{if @screen == :places, do: "flex", else: "hidden md:flex"} flex-col gap-3 pt-[120px] w-full max-w-[420px]"}
-    >
+    <div class={"#{if @screen == :places, do: "flex", else: "hidden md:flex"} flex-col gap-3 pt-[120px] w-full max-w-[420px]"}>
       <h1 class="text-4xl font-bold ml-4">Places</h1>
       <%!-- SEARCH --%>
       <.search_bar search={@search} myself={@myself} />
@@ -34,7 +20,7 @@ defmodule HimmelWeb.PlacesLive do
                 <li
                   id={"result-#{index}"}
                   phx-target={@myself}
-                  phx-click="add_search_result_to_saved_places"
+                  phx-click="save_search_result"
                   phx-value-search_result_id={result.id}
                 >
                   <div class="border-2 border-red-dark px-4 py-2 cursor-pointer rounded-xl bg-red-dark hover:border-red-medium hover:border-2">
@@ -79,99 +65,6 @@ defmodule HimmelWeb.PlacesLive do
     """
   end
 
-  def handle_event("search_places", %{"name" => name}, socket) do
-    socket =
-      assign(socket,
-        search: name,
-        search_results: Services.Geocoding.search_places(name)
-      )
-
-    {:noreply, socket}
-  end
-
-  def handle_event("set_search", %{"name" => name}, socket) do
-    socket = if name == "", do: assign(socket, search_results: nil), else: socket
-    {:noreply, assign(socket, search: name)}
-  end
-
-  def handle_event("clear_search", _, socket) do
-    {:noreply, assign(socket, search: "", search_results: nil)}
-  end
-
-  def handle_event(
-        "add_search_result_to_saved_places",
-        %{"search_result_id" => search_result_id},
-        socket
-      ) do
-    item = get_item_from_search_results(search_result_id, socket)
-    item_location_id = "#{item.latitude},#{item.longitude}"
-    async_saved_places = socket.assigns.saved_places
-    saved_places_list = async_saved_places.result
-
-    is_already_saved? =
-      Enum.any?(saved_places_list, fn p -> p.location_id == item_location_id end)
-
-    case is_already_saved? do
-      true ->
-        {:noreply, assign(socket, search: "", search_results: nil)}
-
-      false ->
-        place_with_weather =
-          item
-          |> Places.create_place_from_search_result()
-          |> Weather.get_weather()
-
-        if socket.assigns[:current_user] do
-          # TODO: see if place already exists in DB
-          # if not, then save place in DB
-          # then add place to user's saved places
-
-          IO.puts("save place in DB (if not already) and add to user's saved places")
-        end
-
-        send(self(), {:set_main_weather, place_with_weather})
-
-        {:noreply,
-         assign(socket,
-           search: "",
-           search_results: nil,
-           saved_places: %AsyncResult{
-             async_saved_places
-             | result: [place_with_weather | saved_places_list]
-           }
-         )}
-    end
-  end
-
-  def handle_event("remove_place", %{"location_id" => location_id}, socket) do
-    async_saved_places = socket.assigns.saved_places
-    saved_places = async_saved_places.result
-
-    updated_places =
-      Enum.reject(saved_places, fn p -> p.location_id == location_id end)
-
-    if socket.assigns[:current_user] do
-      # TODO: remove place from user's saved places
-      # TODO: if place has no users, then remove place in DB
-      IO.puts(
-        "remove place from user's saved places, and if there's place has no users, then remove place in DB"
-      )
-    end
-
-    # send(self(), {:place_removed, location_id})
-
-    {:noreply,
-     assign(socket, saved_places: %AsyncResult{async_saved_places | result: updated_places})}
-  end
-
-  def handle_event("set_main_weather", %{"location_id" => location_id}, socket) do
-    place =
-      Enum.find(socket.assigns.saved_places.result, fn p -> p.location_id == location_id end)
-
-    send(self(), {:set_main_weather, place})
-    {:noreply, socket}
-  end
-
   def saved_places(assigns) do
     ~H"""
     <.async_result :let={places} assign={@saved_places}>
@@ -206,7 +99,7 @@ defmodule HimmelWeb.PlacesLive do
         <button
           class="cursor-pointer text-red-light text-left h-6 w-6"
           phx-target={@myself}
-          phx-click="remove_place"
+          phx-click="delete_place"
           phx-value-location_id={@place.location_id}
         >
           <.icon_trash />
@@ -315,11 +208,5 @@ defmodule HimmelWeb.PlacesLive do
       />
     </svg>
     """
-  end
-
-  defp get_item_from_search_results(item_id, socket) do
-    Enum.find(socket.assigns[:search_results], fn result ->
-      result.id == String.to_integer(item_id)
-    end)
   end
 end

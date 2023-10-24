@@ -1,12 +1,9 @@
-defmodule HimmelWeb.SettingsLive do
-  use HimmelWeb, :live_component
+defmodule HimmelWeb.Components.Settings do
+  use HimmelWeb, :component
 
-  def render(assigns) do
+  def settings(assigns) do
     ~H"""
-    <div
-      id="settings"
-      class={"#{if @screen == :settings, do: "flex", else: "hidden xl:flex"} flex-col gap-3 pt-[120px] w-full max-w-[320px]"}
-    >
+    <div class={"#{if @screen == :settings, do: "flex", else: "hidden xl:flex"} flex-col gap-3 pt-[120px] w-full max-w-[320px]"}>
       <h1 class="text-4xl font-bold ml-4">Settings</h1>
       <%!-- TEMPERATURE --%>
       <%!-- <div class="flex flex-col justify-between rounded-xl bg-red-dark py-3.5 px-4 gap-1">

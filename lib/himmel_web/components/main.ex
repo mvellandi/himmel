@@ -1,12 +1,9 @@
-defmodule HimmelWeb.MainLive do
-  use HimmelWeb, :live_component
+defmodule HimmelWeb.Components.Main do
+  use HimmelWeb, :component
 
-  def render(assigns) do
+  def main(assigns) do
     ~H"""
-    <div
-      id="main"
-      class={"#{if @screen == :main, do: "flex", else: "hidden md:flex"} flex-col gap-3 w-full md:max-w-[400px] lg:min-w-[450px] xl:max-w-[450px] 2xl:max-w=[520px]"}
-    >
+    <div class={"#{if @screen == :main, do: "flex", else: "hidden md:flex"} flex-col gap-3 w-full md:max-w-[400px] lg:min-w-[450px] xl:max-w-[450px] 2xl:max-w=[520px]"}>
       <%!-- CURRENT --%>
       <div class="self-center justify-self-center w-full ">
         <div class="flex justify-center w-full">
