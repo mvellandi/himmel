@@ -1,4 +1,5 @@
 defmodule HimmelWeb.Utils do
+  alias Himmel.Accounts
   alias Phoenix.Component
   alias Phoenix.LiveView, as: LV
   alias Phoenix.LiveView.AsyncResult
@@ -70,6 +71,8 @@ defmodule HimmelWeb.Utils do
     }
   end
 
+  # TODO: Update the user last active place after a new one is set to main weather
+
   def maybe_save_place_and_set_to_main_weather(location, socket) do
     current_user = socket.assigns[:current_user]
     async_saved_places = socket.assigns.saved_places
@@ -80,58 +83,59 @@ defmodule HimmelWeb.Utils do
         p.location_id == "#{location.latitude},#{location.longitude}"
       end)
 
-    # TODO: check also if already saved in DB as secondary check?
-
     if already_saved? do
       socket
     else
-      place_with_weather =
+      new_place_with_weather =
         location
         |> Places.create_place_from_search_result()
         |> Weather.get_weather()
 
+      updated_saved_places = [new_place_with_weather | saved_places_list]
+
       if current_user do
-        IO.puts("save place to user's saved places, if not already saved")
-
-        new_place =
-          Map.from_struct(place_with_weather)
-          |> Map.update(:coordinates, nil, fn c -> Map.from_struct(c) end)
-
-        IO.inspect(new_place, label: "new_place")
-
-        Places.save_place_to_user(current_user, %{
-          places: [new_place | current_user.places]
-        })
+        # Places.save_place_to_user(current_user, place_with_weather)
+        Accounts.update_user_places(current_user, updated_saved_places)
+        # else
+        #   nil
       end
 
       Component.assign(socket,
-        main_weather: prepare_main_weather(place_with_weather),
+        main_weather: prepare_main_weather(new_place_with_weather),
+        # updated_current_user: %{current_user | places: updated_db_saved_places},
         saved_places: %AsyncResult{
           async_saved_places
-          | result: [place_with_weather | saved_places_list]
+          | result: updated_saved_places
         }
       )
     end
   end
 
   def delete_place_and_maybe_change_main_weather(location_id, socket) do
+    current_user = socket.assigns[:current_user]
     async_saved_places = socket.assigns.saved_places
     saved_places_list = async_saved_places.result
 
-    updated_saved_places_list =
+    updated_saved_places =
       Enum.reject(saved_places_list, fn p -> p.location_id == location_id end)
 
-    if socket.assigns[:current_user] do
-      # TODO: remove place from user's saved places
-      # TODO: if place has no users, then remove place in DB
-      IO.puts(
-        "remove place from user's saved places, and if there's place has no users, then remove place in DB"
-      )
+    # updated_db_saved_places =
+    if current_user do
+      # Places.remove_place_from_user(current_user, location_id)
+      Accounts.update_user_places(current_user, updated_saved_places)
+
+      # else
+      #   nil
     end
+
+    # TODO: Update the main weather to the place right after the one that was deleted. If the deleted place was the last one, update to the updated last one.
 
     Component.assign(socket,
       #  main_weather: Utils.prepare_main_weather(place),
-      saved_places: %AsyncResult{async_saved_places | result: updated_saved_places_list}
+      # current_user: %{current_user | places: updated_db_saved_places},
+      saved_places:
+        %AsyncResult{async_saved_places | result: updated_saved_places}
+        |> IO.inspect(label: "lv_saved_places")
     )
   end
 end
