@@ -9,7 +9,7 @@ defmodule Himmel.Accounts.User do
     field :hashed_password, :string, redact: true
     field :confirmed_at, :naive_datetime
     field :active_place_id, :string
-    embeds_many :places, Place
+    embeds_many :places, Place, on_replace: :delete
 
     timestamps()
   end
@@ -21,10 +21,10 @@ defmodule Himmel.Accounts.User do
     # drop_param: :places_drop,
   """
 
-  def places_changeset(user, attrs) do
+  def places_changeset(user, updated_places) do
     user
-    |> cast(attrs, [])
-    |> cast_embed(:places, on_replace: :delete)
+    |> change()
+    |> put_embed(:places, updated_places)
   end
 
   @doc """
