@@ -18,8 +18,8 @@ defmodule HimmelWeb.AppLive do
   end
 
   def handle_params(_params, _uri, socket) do
-    user_places = Enum.map(socket.assigns.current_user.places, fn p -> p.name end)
-    IO.inspect(user_places, label: "handle_params, user places")
+    # user_places = Enum.map(socket.assigns.current_user.places, fn p -> p.name end)
+    # IO.inspect(user_places, label: "handle_params, user places")
     {:noreply, socket}
   end
 

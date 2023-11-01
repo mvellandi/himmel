@@ -126,48 +126,41 @@ defmodule HimmelWeb.Utils do
       label: "updated_saved_places BEFORE DB UPDATE"
     )
 
-    updated_user =
-      if current_user do
-        Accounts.update_user_places(current_user, updated_saved_places)
+    if current_user do
+      Accounts.update_user_places(current_user, updated_saved_places)
+    end
+
+    updated_main_weather =
+      if location_id == main_weather.location_id do
+        {first, second} =
+          Enum.split_while(saved_places_list, fn p -> p.location_id != location_id end)
+
+        IO.inspect(Enum.map(first, fn p -> p.name end),
+          label: "first"
+        )
+
+        IO.inspect(Enum.map(second, fn p -> p.name end),
+          label: "second"
+        )
+
+        case {first, second} do
+          # only and last
+          {[], [_p | []]} -> prepare_main_weather(current_location)
+          # first of many
+          {[], [_p | ps]} -> List.first(ps) |> prepare_main_weather()
+          # last of many
+          {first, [_p | []]} -> List.last(first) |> prepare_main_weather()
+          # has previous and next
+          {_first, [_p | ps]} -> List.first(ps) |> prepare_main_weather()
+          _ -> raise "Unexpected pattern match in delete_place_and_maybe_change_main_weather"
+        end
       else
-        nil
+        main_weather
       end
-
-    # updated_main_weather =
-    #   cond do
-    #     location_id == main_weather.location_id ->
-    #       {first, second} =
-    #         Enum.split_while(saved_places_list, fn p -> p.location_id != location_id end)
-
-    #       new_main_place =
-    #         case {first, second} do
-    #           {[], []} -> nil
-    #           {[_p], []} -> nil
-    #           {first, [_p | []]} -> List.last(first)
-    #           {_first, [_p | ps]} -> List.first(ps)
-    #           _ -> "unexpected"
-    #         end
-
-    #       if new_main_place === "unexpected" do
-    #         raise "Unexpected pattern match in delete_place_and_maybe_change_main_weather"
-    #       else
-    #         prepare_main_weather(new_main_place)
-    #       end
-
-    #     location_id !== main_weather.location_id && updated_saved_places !== [] ->
-    #       main_weather
-
-    #     updated_saved_places === [] ->
-    #       prepare_main_weather(current_location)
-    #   end
-
-    # IO.inspect(current_user, label: "current_user")
-    # IO.inspect(updated_user, label: "updated_user")
 
     _places_weather_socket =
       Component.assign(socket,
-        # current_user: updated_user,
-        # main_weather: updated_main_weather,
+        main_weather: updated_main_weather,
         saved_places: %AsyncResult{async_saved_places | result: updated_saved_places}
       )
   end

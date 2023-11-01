@@ -5,18 +5,20 @@ defmodule Himmel.Accounts do
 
   import Ecto.Query, warn: false
   alias Himmel.Repo
-
   alias Himmel.Accounts.{User, UserToken, UserNotifier}
 
-  def update_user_places(user, updated_places) do
-    updated_user =
-      user
-      |> User.places_changeset(updated_places)
-      |> Repo.update!()
+  def update_user_places(user, []) do
+    get_user!(user.id)
+    |> Ecto.Changeset.change(places: [])
+    |> Repo.update!()
+  end
 
-    IO.inspect(Enum.map(updated_user.places, fn p -> p.name end),
-      label: "updated_user AFTER DB UPDATE"
-    )
+  def update_user_places(user, updated_places) do
+    # For some reason, if updated_places is empty, the DB will sometimes not delete all saved places.
+    # Hence, the previous function above.
+    user
+    |> User.places_changeset(updated_places)
+    |> Repo.update!()
   end
 
   ## Database getters
