@@ -31,13 +31,18 @@ defmodule Himmel.Weather do
   def handle_call({:get, %Place{location_id: location_id} = place}, _from, state) do
     case Map.get(state, location_id) do
       nil ->
-        place_with_updated_weather = Services.Weather.get_weather(place)
-        new_state = Map.put(state, location_id, place_with_updated_weather)
+        case Services.Weather.get_weather(place) do
+          {:ok, weather} ->
+            new_state = Map.put(state, location_id, weather)
+            {:reply, {:ok, weather}, new_state}
 
-        {:reply, place_with_updated_weather, new_state}
+          {:error, reason} ->
+            {:reply, {:error, reason}, state}
+        end
 
-      place_with_weather ->
-        {:reply, place_with_weather, state}
+      cached_weather ->
+        # {:reply, {:error, :timeout}, state}
+        {:reply, {:ok, cached_weather}, state}
     end
   end
 
