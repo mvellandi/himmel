@@ -9,10 +9,6 @@ defmodule Himmel.Accounts do
   alias Himmel.Accounts.{User, UserToken, UserNotifier}
 
   def update_user_places(user, updated_places) do
-    # IO.inspect(Enum.map(updated_places, fn p -> p.name end),
-    #   label: "updated_places BEFORE"
-    # )
-
     updated_user =
       user
       |> User.places_changeset(updated_places)
