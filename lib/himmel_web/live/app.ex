@@ -2,7 +2,7 @@ defmodule HimmelWeb.AppLive do
   use HimmelWeb, :live_view
   alias HimmelWeb.Utils
   alias Himmel.Services
-  import HimmelWeb.Components.{Main, Places, Settings}
+  import HimmelWeb.Components.{Main, Places, Settings, ApplicationError}
 
   @doc """
   MAIN shows data for the current PLACE. If there's a user session or authenticated user's places and history,
@@ -12,9 +12,7 @@ defmodule HimmelWeb.AppLive do
     # if connected?(socket) do
     #   HimmelWeb.Endpoint.subscribe("places")
     # end
-    updated_socket = Utils.places_weather_data_init(socket)
-
-    {:ok, assign(updated_socket, screen: :main, search: "", search_results: nil)}
+    {:ok, Utils.init_data_start(socket)}
   end
 
   def handle_params(_params, _uri, socket) do
@@ -59,19 +57,24 @@ defmodule HimmelWeb.AppLive do
       <%!-- > 1280px: CURRENT @SCREEN SHOWN --%>
       <%!-- =< 1280px: ALL @SCREEN SHOWN IN A SINGLE ROW --%>
       <div class="flex justify-center gap-10">
-        <%!-- MAIN --%>
-        <.main screen={@screen} main_weather={@main_weather} />
-        <%!-- PLACES --%>
-        <.places
-          screen={@screen}
-          search={@search}
-          search_results={@search_results}
-          current_location={@current_location}
-          current_user={assigns.current_user}
-          saved_places={@saved_places}
-        />
-        <%!-- SETTINGS --%>
-        <.settings screen={@screen} current_user={assigns.current_user} />
+        <%= if @screen == :error do %>
+          <%!-- ERROR --%>
+          <.application_error screen={@screen} error={@error} />
+        <% else %>
+          <%!-- MAIN --%>
+          <.main screen={@screen} main_weather={@main_weather} />
+          <%!-- PLACES --%>
+          <.places
+            screen={@screen}
+            search={@search}
+            search_results={@search_results}
+            current_location={@current_location}
+            current_user={assigns.current_user}
+            saved_places={@saved_places}
+          />
+          <%!-- SETTINGS --%>
+          <.settings screen={@screen} current_user={assigns.current_user} />
+        <% end %>
       </div>
     </main>
     """
@@ -115,9 +118,17 @@ defmodule HimmelWeb.AppLive do
         result.id == String.to_integer(search_result_id)
       end)
 
+    already_saved? =
+      Enum.any?(socket.assigns.saved_places.result, fn p ->
+        p.location_id == "#{location.latitude},#{location.longitude}"
+      end)
+
     updated_socket =
-      Utils.maybe_save_place_and_set_to_main_weather(location, socket)
-      |> assign(search: "", search_results: nil)
+      if already_saved? do
+        socket
+      else
+        Utils.save_place_and_set_to_main_weather(location, socket)
+      end
 
     {:noreply, updated_socket}
   end

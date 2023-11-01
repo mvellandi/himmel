@@ -21,9 +21,7 @@ defmodule Himmel.Services.Weather do
   end
 
   def get_weather(
-        %Place{
-          coordinates: %Coordinates{latitude: latitude, longitude: longitude}
-        } = place
+        %Place{coordinates: %Coordinates{latitude: latitude, longitude: longitude}} = place
       ) do
     response =
       Utils.web_request(
@@ -33,7 +31,7 @@ defmodule Himmel.Services.Weather do
       )
 
     case response do
-      {:ok, response} ->
+      {:ok, %Finch.Response{status: 200} = response} ->
         data = Jason.decode!(response.body)
 
         {_, weather_info} =
@@ -42,11 +40,14 @@ defmodule Himmel.Services.Weather do
           |> prepare_daily_weather()
           |> prepare_hourly_weather(36)
 
-        place
-        |> Map.put(:weather, weather_info)
+        # {:error, :timeout}
+        {:ok, Map.put(place, :weather, weather_info)}
 
-      {:error, reason} ->
-        IO.inspect(reason, label: "Web request error")
+      {:ok, %Finch.Response{status: 504}} ->
+        {:error, :timeout}
+
+      {:error, %Mint.TransportError{reason: :timeout}} ->
+        {:error, :timeout}
     end
   end
 
