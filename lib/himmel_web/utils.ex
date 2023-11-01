@@ -13,6 +13,9 @@ defmodule HimmelWeb.Utils do
     current_user = socket.assigns[:current_user]
     saved_places = if current_user, do: current_user.places, else: []
 
+    # TODO: Handle if the weather service is not responding
+    # %Mint.TransportError{reason: :timeout} of type Mint.TransportError (a struct)
+
     active_place =
       if current_user,
         do: Enum.find(saved_places, fn p -> p.location_id == current_user.active_place_id end),
@@ -56,12 +59,14 @@ defmodule HimmelWeb.Utils do
 
   def prepare_main_weather(%Place{
         name: name,
+        location_id: location_id,
         weather: %{current: current, daily: daily, hourly: hourly}
       }) do
     todays_temp_range = List.first(daily) |> Map.get(:temperature)
 
     %{
       name: name,
+      location_id: location_id,
       temperature: current.temperature,
       description_text: current.description.text,
       high: todays_temp_range.high,
@@ -94,15 +99,11 @@ defmodule HimmelWeb.Utils do
       updated_saved_places = [new_place_with_weather | saved_places_list]
 
       if current_user do
-        # Places.save_place_to_user(current_user, place_with_weather)
         Accounts.update_user_places(current_user, updated_saved_places)
-        # else
-        #   nil
       end
 
       Component.assign(socket,
         main_weather: prepare_main_weather(new_place_with_weather),
-        # updated_current_user: %{current_user | places: updated_db_saved_places},
         saved_places: %AsyncResult{
           async_saved_places
           | result: updated_saved_places
@@ -115,27 +116,59 @@ defmodule HimmelWeb.Utils do
     current_user = socket.assigns[:current_user]
     async_saved_places = socket.assigns.saved_places
     saved_places_list = async_saved_places.result
+    main_weather = socket.assigns.main_weather
+    current_location = socket.assigns.current_location
 
     updated_saved_places =
       Enum.reject(saved_places_list, fn p -> p.location_id == location_id end)
 
-    # updated_db_saved_places =
-    if current_user do
-      # Places.remove_place_from_user(current_user, location_id)
-      Accounts.update_user_places(current_user, updated_saved_places)
-
-      # else
-      #   nil
-    end
-
-    # TODO: Update the main weather to the place right after the one that was deleted. If the deleted place was the last one, update to the updated last one.
-
-    Component.assign(socket,
-      #  main_weather: Utils.prepare_main_weather(place),
-      # current_user: %{current_user | places: updated_db_saved_places},
-      saved_places:
-        %AsyncResult{async_saved_places | result: updated_saved_places}
-        |> IO.inspect(label: "lv_saved_places")
+    IO.inspect(Enum.map(updated_saved_places, fn p -> p.name end),
+      label: "updated_saved_places BEFORE DB UPDATE"
     )
+
+    updated_user =
+      if current_user do
+        Accounts.update_user_places(current_user, updated_saved_places)
+      else
+        nil
+      end
+
+    # updated_main_weather =
+    #   cond do
+    #     location_id == main_weather.location_id ->
+    #       {first, second} =
+    #         Enum.split_while(saved_places_list, fn p -> p.location_id != location_id end)
+
+    #       new_main_place =
+    #         case {first, second} do
+    #           {[], []} -> nil
+    #           {[_p], []} -> nil
+    #           {first, [_p | []]} -> List.last(first)
+    #           {_first, [_p | ps]} -> List.first(ps)
+    #           _ -> "unexpected"
+    #         end
+
+    #       if new_main_place === "unexpected" do
+    #         raise "Unexpected pattern match in delete_place_and_maybe_change_main_weather"
+    #       else
+    #         prepare_main_weather(new_main_place)
+    #       end
+
+    #     location_id !== main_weather.location_id && updated_saved_places !== [] ->
+    #       main_weather
+
+    #     updated_saved_places === [] ->
+    #       prepare_main_weather(current_location)
+    #   end
+
+    # IO.inspect(current_user, label: "current_user")
+    # IO.inspect(updated_user, label: "updated_user")
+
+    _places_weather_socket =
+      Component.assign(socket,
+        # current_user: updated_user,
+        # main_weather: updated_main_weather,
+        saved_places: %AsyncResult{async_saved_places | result: updated_saved_places}
+      )
   end
 end

@@ -17,6 +17,12 @@ defmodule HimmelWeb.AppLive do
     {:ok, assign(updated_socket, screen: :main, search: "", search_results: nil)}
   end
 
+  def handle_params(_params, _uri, socket) do
+    user_places = Enum.map(socket.assigns.current_user.places, fn p -> p.name end)
+    IO.inspect(user_places, label: "handle_params, user places")
+    {:noreply, socket}
+  end
+
   def render(assigns) do
     ~H"""
     <%!-- MOBILE NAV --%>
