@@ -24,13 +24,9 @@ defmodule HimmelWeb.AppLive do
   def render(assigns) do
     ~H"""
     <%!-- MOBILE NAV --%>
-    <nav class="fixed z-1 bg-red bottom-0 w-full h-[70px] flex justify-center py-3 px-5 xl:hidden">
+    <nav class="fixed z-1 bg-primary bottom-0 w-full h-[70px] flex justify-center py-3 px-5 xl:hidden">
       <div class="flex w-full max-w-[850px] justify-between items-center text-lg leading-none">
-        <button
-          phx-click="show_settings"
-          class="p-3 rounded-xl bg-blue-dark border border-red-light tracking-[0.05rem]
-          hover:bg-blue-light hover:text-blue-dark hover:border-blue-dark"
-        >
+        <button phx-click="show_settings" class="nav-button">
           <%= if @screen == :settings, do: "Return", else: "Settings" %>
         </button>
         <%!-- IF TIME PERMITS: ADD DOT PAGINATION --%>
@@ -39,18 +35,14 @@ defmodule HimmelWeb.AppLive do
             <button>O</button><button>O</button><button>O</button><button>O</button>
           </div>
         <% end %> --%>
-        <button
-          phx-click="show_places"
-          class="md:hidden p-3 rounded-xl bg-blue-dark border border-red-light tracking-[0.05rem]
-          hover:bg-blue-light hover:text-blue-dark hover:border-blue-dark"
-        >
+        <button phx-click="show_places" class="md:hidden nav-button">
           <%= if @screen == :places, do: "Return", else: "My Places" %>
         </button>
       </div>
     </nav>
     <%!-- DESKTOP HEADER --%>
     <header class="hidden lg:flex justify-center gap-4">
-      <h1 class="font-extrabold text-5xl py-4">☀️ &nbsp; Himmel &nbsp; 🌧️</h1>
+      <h1 class="font-extrabold text-5xl py-4 text-shadow-surround">☀️ &nbsp; Himmel &nbsp; 🌧️</h1>
     </header>
     <%!-- SCREEN / LIVEVIEW WRAPPER --%>
     <main class="pb-[6rem] w-full">

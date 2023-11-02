@@ -10,7 +10,7 @@ defmodule HimmelWeb.Components.Main do
           <%!-- <%= if length(parent.places) > 1 && "this isn't the first place" do %> --%>
           <%!-- <button>P</button> --%>
           <%!-- <% end %> --%>
-          <div class="flex flex-col items-center pt-16 pb-12">
+          <div class="flex flex-col items-center pt-16 pb-12 text-shadow-surround">
             <h1 class="text-4xl"><%= @main_weather.name %></h1>
             <h2 class="text-8xl py-1 font-extralight">
               <%= @main_weather.temperature %>
@@ -30,14 +30,14 @@ defmodule HimmelWeb.Components.Main do
       <%!-- TODAY --%>
       <div
         id="hours"
-        class="relative flex gap-2 rounded-xl p-4 bg-red-dark overflow-x-auto whitespace-nowrap"
+        class="relative flex gap-2 rounded-xl p-4 bg-primary-dark overflow-x-auto whitespace-nowrap"
       >
         <%!-- HOUR COLUMNS --%>
         <.hours hours={@main_weather.hours} />
       </div>
       <%!-- 10-DAYS --%>
-      <div class="flex flex-col rounded-xl pt-2 pb-4 px-4 bg-red-dark">
-        <h3 class="uppercase text-red-medium text-[1.1rem]">10-Day Forecast</h3>
+      <div class="flex flex-col rounded-xl pt-2 pb-4 px-4 bg-primary-dark">
+        <h3 class="uppercase text-primary-medium text-[1.1rem]">10-Day Forecast</h3>
         <%!-- DAY ROWS --%>
         <.days days={@main_weather.days} />
       </div>

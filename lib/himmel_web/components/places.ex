@@ -4,7 +4,7 @@ defmodule HimmelWeb.Components.Places do
   def places(assigns) do
     ~H"""
     <div class={"#{if @screen == :places, do: "flex", else: "hidden md:flex"} flex-col gap-3 pt-[120px] w-full max-w-[420px]"}>
-      <h1 class="text-4xl font-bold ml-4">Places</h1>
+      <h1 class="text-4xl font-bold pl-4 text-shadow-surround">Places</h1>
       <%!-- SEARCH --%>
       <.search_bar search={@search} />
       <%!-- SEARCH RESULT LIST --%>
@@ -12,7 +12,7 @@ defmodule HimmelWeb.Components.Places do
         <%= if @search_results do %>
           <ul class="flex flex-col gap-2">
             <%= if @search_results == [] && @search !== "" do %>
-              <li class="flex justify-left items-center rounded-xl bg-red-dark py-3.5 px-4">
+              <li class="flex justify-left items-center rounded-xl bg-primary-dark py-3.5 px-4">
                 <h2 class="text-2xl font-bold">No results found</h2>
               </li>
             <% else %>
@@ -22,7 +22,7 @@ defmodule HimmelWeb.Components.Places do
                   phx-click="save_search_result"
                   phx-value-search_result_id={result.id}
                 >
-                  <div class="border-2 border-red-dark px-4 py-2 cursor-pointer rounded-xl bg-red-dark hover:border-red-medium hover:border-2">
+                  <div class="border-2 border-primary-dark px-4 py-2 cursor-pointer rounded-xl bg-primary-dark hover:border-primary-medium hover:border-2">
                     <h2 class="text-2xl font-bold"><%= result.name %></h2>
                     <h3 class="font-semibold"><%= result.region %>, <%= result.country %></h3>
                   </div>
@@ -39,7 +39,7 @@ defmodule HimmelWeb.Components.Places do
           <div
             id="currentLocation"
             phx-click="set_main_weather_to_current_location"
-            class="flex justify-between items-center rounded-xl bg-red-dark py-3.5 px-4 cursor-pointer"
+            class="flex justify-between items-center rounded-xl bg-primary-dark py-3.5 px-4 cursor-pointer"
           >
             <div class="flex flex-col">
               <h2 class="text-2xl font-bold leading-none">My Location</h2>
@@ -75,7 +75,7 @@ defmodule HimmelWeb.Components.Places do
           <.place_card id={"placeCard-#{index}"} place={place} />
         <% end) %>
       <% else %>
-        <div class="flex justify-center items-center rounded-xl bg-red-dark py-3.5 px-4">
+        <div class="flex justify-center items-center rounded-xl bg-primary-dark py-3.5 px-4">
           <h2 class="text-2xl font-bold">No saved places</h2>
         </div>
       <% end %>
@@ -89,13 +89,13 @@ defmodule HimmelWeb.Components.Places do
       id={@id}
       phx-click="set_main_weather"
       phx-value-location_id={@place.location_id}
-      class="flex justify-between rounded-xl bg-red-dark py-3.5 px-4 cursor-pointer"
+      class="flex justify-between rounded-xl bg-primary-dark py-3.5 px-4 cursor-pointer"
     >
       <div class="flex flex-col">
         <h2 class="text-2xl font-bold leading-none"><%= @place.name %></h2>
         <h3 class="font-semibold pb-4"><%= @place.weather.current.description.text %></h3>
         <button
-          class="cursor-pointer text-red-light text-left h-6 w-6"
+          class="cursor-pointer text-primary-light text-left h-6 w-6"
           phx-click="delete_place"
           phx-value-location_id={@place.location_id}
         >
@@ -119,7 +119,7 @@ defmodule HimmelWeb.Components.Places do
     ~H"""
     <search>
       <form phx-submit="search_places" phx-change="set_search">
-        <div class="inline-flex items-center justify-between w-full h-10 rounded-xl bg-red-dark text-red-light py-2 pl-2">
+        <div class="inline-flex items-center justify-between w-full h-10 rounded-xl bg-primary-dark text-primary-light py-2 pl-2">
           <div class="relative w-full">
             <input
               type="text"
@@ -128,12 +128,12 @@ defmodule HimmelWeb.Components.Places do
               phx-debounce="300"
               placeholder="Search for a city or place"
               autocomplete="off"
-              class="w-full bg-transparent text-white placeholder:text-red-light pl-2 pr-8"
+              class="w-full bg-transparent text-white placeholder:text-primary-light pl-2 pr-8"
             />
             <%= if @search !== "" do %>
               <span
                 phx-click="clear_search"
-                class="absolute right-0 top-0 h-full w-8 bg-red-dark flex place-content-center cursor-pointer"
+                class="absolute right-0 top-0 h-full w-8 bg-primary-dark flex place-content-center cursor-pointer"
               >
                 <.icon_x_circle />
               </span>
