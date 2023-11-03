@@ -40,7 +40,6 @@ defmodule Himmel.Services.Weather do
           |> prepare_daily_weather()
           |> prepare_hourly_weather(36)
 
-        # {:error, :timeout}
         {:ok, Map.put(place, :weather, weather_info)}
 
       {:ok, %Finch.Response{status: 504}} ->
