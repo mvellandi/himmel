@@ -146,6 +146,7 @@ defmodule HimmelWeb.AppLive do
 
     {:noreply,
      assign(socket,
+       screen: :main,
        main_weather: Utils.prepare_main_weather(place),
        current_user: updated_user
      )}
@@ -165,6 +166,7 @@ defmodule HimmelWeb.AppLive do
 
     {:noreply,
      assign(socket,
+       screen: :main,
        main_weather: Utils.prepare_main_weather(current_location),
        current_user: updated_user
      )}
