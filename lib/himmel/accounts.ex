@@ -8,7 +8,7 @@ defmodule Himmel.Accounts do
   alias Himmel.Accounts.{User, UserToken, UserNotifier}
 
   def update_user_places(user, []) do
-    get_user!(user.id)
+    user
     |> Ecto.Changeset.change(places: [])
     |> Repo.update!()
   end
@@ -18,6 +18,12 @@ defmodule Himmel.Accounts do
     # Hence, the previous function above.
     user
     |> User.places_changeset(updated_places)
+    |> Repo.update!()
+  end
+
+  def update_user_active_place(user, location_id) do
+    user
+    |> Ecto.Changeset.change(%{active_place_id: location_id})
     |> Repo.update!()
   end
 
