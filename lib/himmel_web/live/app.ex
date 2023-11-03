@@ -2,6 +2,7 @@ defmodule HimmelWeb.AppLive do
   use HimmelWeb, :live_view
   alias HimmelWeb.Utils
   alias Himmel.Services
+  alias Himmel.Accounts
   import HimmelWeb.Components.{Main, Places, Settings, ApplicationError}
 
   @doc """
@@ -131,14 +132,41 @@ defmodule HimmelWeb.AppLive do
   end
 
   def handle_event("set_main_weather", %{"location_id" => location_id}, socket) do
+    current_user = socket.assigns[:current_user]
+
     place =
       Enum.find(socket.assigns.saved_places.result, fn p -> p.location_id == location_id end)
 
-    {:noreply, assign(socket, main_weather: Utils.prepare_main_weather(place))}
+    updated_user =
+      if current_user do
+        Accounts.update_user_active_place(current_user, location_id)
+      else
+        nil
+      end
+
+    {:noreply,
+     assign(socket,
+       main_weather: Utils.prepare_main_weather(place),
+       current_user: updated_user
+     )}
   end
 
   def handle_event("set_main_weather_to_current_location", _, socket) do
+    current_user = socket.assigns[:current_user]
+    # IO.inspect(socket.assigns.current_user, label: "current user")
     current_location = socket.assigns.current_location
-    {:noreply, assign(socket, main_weather: Utils.prepare_main_weather(current_location))}
+
+    updated_user =
+      if current_user do
+        Accounts.update_user_active_place(current_user, nil)
+      else
+        nil
+      end
+
+    {:noreply,
+     assign(socket,
+       main_weather: Utils.prepare_main_weather(current_location),
+       current_user: updated_user
+     )}
   end
 end

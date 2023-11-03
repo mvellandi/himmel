@@ -11,34 +11,26 @@ defmodule HimmelWeb.Utils do
   def init_data_start(socket) do
     case get_current_location_weather(socket) do
       {:ok, weather} ->
-        init_data_continue(%{data: weather}, socket)
+        init_data_continue(%{current: weather}, socket)
 
-      {:error, :timeout} ->
+      {:error, reason} ->
         IO.puts("init data start error")
 
         Component.assign(socket,
           screen: :error,
-          error: %{
-            reason: "We're having trouble reaching the weather service",
-            advisory: "Please try again later"
-          }
+          error: prepare_error_message(reason)
         )
-
-      other ->
-        IO.inspect(other, label: "Unexpected pattern match in init_data_start")
     end
   end
 
-  def init_data_continue(%{data: current_location_weather}, socket) do
+  def init_data_continue(%{current: current_location_weather}, socket) do
     current_user = socket.assigns[:current_user]
+    active_place_id = current_user.active_place_id
     saved_places = if current_user, do: current_user.places, else: []
 
-    # TODO: Handle if the weather service is not responding
-    # %Mint.TransportError{reason: :timeout} of type Mint.TransportError (a struct)
-
     active_place =
-      if current_user,
-        do: Enum.find(saved_places, fn p -> p.location_id == current_user.active_place_id end),
+      if current_user && active_place_id,
+        do: Enum.find(saved_places, fn p -> p.location_id == active_place_id end),
         else: nil
 
     main_weather =
@@ -48,6 +40,7 @@ defmodule HimmelWeb.Utils do
 
         %Place{} = active_place ->
           Weather.get_weather(active_place)
+          |> elem(1)
           |> prepare_main_weather()
       end
 
@@ -100,8 +93,6 @@ defmodule HimmelWeb.Utils do
     }
   end
 
-  # TODO: Update the user last active place after a new one is set to main weather
-
   def save_place_and_set_to_main_weather(location, socket) do
     current_user = socket.assigns[:current_user]
     async_saved_places = socket.assigns.saved_places
@@ -116,22 +107,29 @@ defmodule HimmelWeb.Utils do
       {:ok, new_place_with_weather} ->
         updated_saved_places = [new_place_with_weather | saved_places_list]
 
-        if current_user do
-          Accounts.update_user_places(current_user, updated_saved_places)
-        end
+        updated_user =
+          if current_user do
+            current_user
+            |> Accounts.update_user_places(updated_saved_places)
+            |> Accounts.update_user_active_place(new_place_with_weather.location_id)
+          else
+            nil
+          end
 
         Component.assign(socket,
           main_weather: prepare_main_weather(new_place_with_weather),
           saved_places: %AsyncResult{async_saved_places | result: updated_saved_places},
           screen: :main,
           search: "",
-          search_results: nil
+          search_results: nil,
+          updated_user: updated_user
         )
 
-      {:error, %Mint.TransportError{reason: :timeout}} ->
-        IO.puts("Timeout in getting weather")
-
-        Component.assign(socket, screen: :error, error: %{reason: "Timeout in getting weather"})
+      {:error, reason} ->
+        Component.assign(socket,
+          screen: :error,
+          error: prepare_error_message(reason)
+        )
     end
   end
 
@@ -149,22 +147,10 @@ defmodule HimmelWeb.Utils do
       label: "updated_saved_places BEFORE DB UPDATE"
     )
 
-    if current_user do
-      Accounts.update_user_places(current_user, updated_saved_places)
-    end
-
     updated_main_weather =
       if location_id == main_weather.location_id do
         {first, second} =
           Enum.split_while(saved_places_list, fn p -> p.location_id != location_id end)
-
-        IO.inspect(Enum.map(first, fn p -> p.name end),
-          label: "first"
-        )
-
-        IO.inspect(Enum.map(second, fn p -> p.name end),
-          label: "second"
-        )
 
         case {first, second} do
           # only and last
@@ -181,10 +167,36 @@ defmodule HimmelWeb.Utils do
         main_weather
       end
 
-    _places_weather_socket =
+    updated_user =
+      if current_user do
+        current_user
+        |> Accounts.update_user_places(updated_saved_places)
+        |> Accounts.update_user_active_place(updated_main_weather.location_id)
+      else
+        nil
+      end
+
+    _updated_socket =
       Component.assign(socket,
         main_weather: updated_main_weather,
-        saved_places: %AsyncResult{async_saved_places | result: updated_saved_places}
+        saved_places: %AsyncResult{async_saved_places | result: updated_saved_places},
+        current_user: updated_user
       )
+  end
+
+  def prepare_error_message(type) do
+    case type do
+      :timeout ->
+        %{
+          reason: "We're having trouble reaching the weather service",
+          advisory: "Please try again later"
+        }
+
+      :unknown ->
+        %{
+          reason: "Something went wrong",
+          advisory: "Please try again later"
+        }
+    end
   end
 end
