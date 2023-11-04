@@ -25,7 +25,7 @@ defmodule HimmelWeb.Utils do
 
   def init_data_continue(%{current: current_location_weather}, socket) do
     current_user = socket.assigns[:current_user]
-    active_place_id = current_user.active_place_id
+    active_place_id = current_user[:active_place_id]
     saved_places = if current_user, do: current_user.places, else: []
 
     active_place =
