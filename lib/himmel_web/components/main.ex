@@ -50,7 +50,9 @@ defmodule HimmelWeb.Components.Main do
     <%= for time <- @hours do %>
       <div class="flex flex-col items-center">
         <h3 class="text-xl"><%= time.hour %></h3>
-        <div class="h-12 w-12"><img src={time.description.image} /></div>
+        <div class="h-12 w-12">
+          <img src={time.description.image} />
+        </div>
         <span class="text-2xl"><%= time.temperature %>&deg;</span>
       </div>
     <% end %>
@@ -62,10 +64,14 @@ defmodule HimmelWeb.Components.Main do
     <%= for day <- @days do %>
       <%!-- <div class="flex justify-between text-2xl"> --%>
       <div class="grid grid-cols-4 text-2xl">
-        <div class="self-center">
+        <div class="self-center flex flex-col gap-0">
           <h4><%= day.weekday %></h4>
+          <span class="text-xs"><%= day.description.text %></span>
         </div>
-        <div class="justify-self-center h-14 w-14"><img src={day.description.image} /></div>
+        <div class="justify-self-center h-14 w-14">
+          <img src={day.description.image} />
+          <%!-- <%= raw(File.read!(day.description.image)) %> --%>
+        </div>
         <div class="self-center justify-self-center">
           <span class="justify-self-end"><%= day.temperature.low %>&deg;</span>
         </div>
