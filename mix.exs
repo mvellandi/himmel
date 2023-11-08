@@ -54,7 +54,8 @@ defmodule Himmel.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:ipinfo, "~> 1.0"},
       {:tz, "~> 0.26.2"},
-      {:domo, "~> 1.5"}
+      {:domo, "~> 1.5"},
+      {:cachex, "~> 3.6"}
     ]
   end
 
