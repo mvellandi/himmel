@@ -73,9 +73,6 @@ defmodule HimmelWeb.AppLive do
     """
   end
 
-  # def handle_event(%Phoenix.PubSub.Broadcast{}) do
-  # end
-
   def handle_event("show_settings", _, socket) do
     screen = if socket.assigns.screen == :settings, do: :main, else: :settings
     {:noreply, assign(socket, screen: screen)}
@@ -170,5 +167,12 @@ defmodule HimmelWeb.AppLive do
        main_weather: Utils.prepare_main_weather(current_location),
        current_user: updated_user
      )}
+  end
+
+  def handle_info(
+        {:weather_update, %{location_id: _, weather: _} = place},
+        socket
+      ) do
+    {:noreply, Utils.update_saved_places_weather(place, socket)}
   end
 end

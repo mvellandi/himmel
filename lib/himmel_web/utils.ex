@@ -19,6 +19,11 @@ defmodule HimmelWeb.Utils do
         )
 
       {:ok, weather} ->
+        Phoenix.PubSub.subscribe(
+          Himmel.PubSub,
+          "weather_updates:#{weather.location_id}"
+        )
+
         init_data_continue(%{current: weather}, socket)
     end
   end
@@ -30,21 +35,29 @@ defmodule HimmelWeb.Utils do
         %Accounts.User{} = user -> {user, user.active_place_id, user.places}
       end
 
-    active_place =
-      if current_user && active_place_id,
-        do: Enum.find(saved_places, fn p -> p.location_id == active_place_id end),
-        else: nil
+    active_place_weather =
+      if current_user && active_place_id do
+        Enum.find(saved_places, fn p -> p.location_id == active_place_id end)
+        |> Weather.get_weather()
+        |> elem(1)
+      else
+        nil
+      end
 
     main_weather =
-      case active_place do
+      case active_place_weather do
         nil ->
           prepare_main_weather(current_location_weather)
 
-        %Place{} = active_place ->
-          Weather.get_weather(active_place)
-          |> elem(1)
-          |> prepare_main_weather()
+        _ ->
+          prepare_main_weather(active_place_weather)
       end
+
+    # Subscribe to all saved places
+    for place <- saved_places do
+      IO.inspect(place.location_id, label: "Subscribing to weather_updates")
+      Phoenix.PubSub.subscribe(Himmel.PubSub, "weather_updates:#{place.location_id}")
+    end
 
     saved_places_socket =
       case saved_places do
@@ -52,9 +65,19 @@ defmodule HimmelWeb.Utils do
           Component.assign(socket, saved_places: %AsyncResult{ok?: true, result: []})
 
         places when is_list(places) ->
+          # if there's an active place, we don't need to get the weather for it again
           LV.assign_async(socket, :saved_places, fn ->
             {:ok,
-             %{saved_places: Enum.map(places, fn p -> Weather.get_weather(p) |> elem(1) end)}}
+             %{
+               saved_places:
+                 Enum.map(places, fn p ->
+                   if active_place_weather && p.location_id == active_place_weather.location_id do
+                     active_place_weather
+                   else
+                     Weather.get_weather(p) |> elem(1)
+                   end
+                 end)
+             }}
           end)
       end
 
@@ -200,5 +223,23 @@ defmodule HimmelWeb.Utils do
           advisory: "Please try again later"
         }
     end
+  end
+
+  def update_saved_places_weather(%{location_id: location_id, weather: weather}, socket) do
+    async_saved_places = socket.assigns.saved_places
+    saved_places_list = async_saved_places.result
+
+    updated_saved_places =
+      Enum.map(saved_places_list, fn p ->
+        if p.location_id == location_id do
+          %Place{p | weather: weather}
+        else
+          p
+        end
+      end)
+
+    Component.assign(socket,
+      saved_places: %AsyncResult{async_saved_places | result: updated_saved_places}
+    )
   end
 end
