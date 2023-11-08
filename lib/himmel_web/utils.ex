@@ -10,9 +10,6 @@ defmodule HimmelWeb.Utils do
 
   def init_data_start(socket) do
     case get_current_location_weather(socket) do
-      {:ok, weather} ->
-        init_data_continue(%{current: weather}, socket)
-
       {:error, reason} ->
         IO.puts("init data start error")
 
@@ -20,6 +17,9 @@ defmodule HimmelWeb.Utils do
           screen: :error,
           error: prepare_error_message(reason)
         )
+
+      {:ok, weather} ->
+        init_data_continue(%{current: weather}, socket)
     end
   end
 
@@ -194,9 +194,9 @@ defmodule HimmelWeb.Utils do
           advisory: "Please try again later"
         }
 
-      :unknown ->
+      _ ->
         %{
-          reason: "Something went wrong",
+          reason: "Hmmm, we're having technical difficulties right now",
           advisory: "Please try again later"
         }
     end
