@@ -6,7 +6,7 @@ defmodule Himmel.Weather do
     case Cachex.get(:weather_cache, location_id) do
       {:ok, nil} ->
         with {:ok, weather_data} <- Services.Weather.get_weather(place),
-             {:ok, true} <- Cachex.put(:weather_cache, location_id, weather_data, ttl: 5000) do
+             {:ok, true} <- Cachex.put(:weather_cache, location_id, weather_data, ttl: 1_800_000) do
           {:ok, weather_data}
         else
           {:error, false} -> {:error, :cache_put_false}
@@ -14,7 +14,7 @@ defmodule Himmel.Weather do
         end
 
       {:ok, weather_data} ->
-        {:ok, true} = Cachex.expire(:weather_cache, location_id, 5000)
+        {:ok, true} = Cachex.expire(:weather_cache, location_id, 1_800_000)
         {:ok, weather_data}
     end
   end
