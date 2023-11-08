@@ -4,6 +4,7 @@ defmodule Himmel.Application do
   @moduledoc false
 
   use Application
+  import Cachex.Spec
 
   @impl true
   def start(_type, _args) do
@@ -20,7 +21,7 @@ defmodule Himmel.Application do
       HimmelWeb.Endpoint,
       # Start a worker by calling: Himmel.Worker.start_link(arg)
       # {Himmel.Worker, arg}
-      {Himmel.Weather, []}
+      {Cachex, [name: :weather_cache, hooks: [hook(module: Himmel.CacheInfoHook)]]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
