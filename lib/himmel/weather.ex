@@ -1,4 +1,4 @@
-defmodule Himmel.Weather do
+defmodule Himmel.Weather2 do
   use GenServer
   alias Himmel.Services
   alias Himmel.Places.Place
