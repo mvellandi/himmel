@@ -24,11 +24,12 @@ defmodule Himmel.CacheInfoHook do
   The return type of this function should be `{ :ok, new_state }`, anything else
   is not accepted.
   """
-  def handle_notify(msg, results, _last) do
-    IO.inspect(msg, label: "Message")
-    IO.inspect(results, label: "Results")
-    {:ok, msg}
-  end
+
+  # def handle_notify(msg, results, _last) do
+  #   IO.inspect(msg, label: "Message")
+  #   IO.inspect(results, label: "Results")
+  #   {:ok, msg}
+  # end
 
   @doc """
   Provides a way to retrieve the last action taken inside the cache.
