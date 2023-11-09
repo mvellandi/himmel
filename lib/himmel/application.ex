@@ -15,6 +15,7 @@ defmodule Himmel.Application do
       Himmel.Repo,
       # Start the PubSub system
       {Phoenix.PubSub, name: Himmel.PubSub},
+      {Himmel.PlaceTracker, [pubsub_server: Himmel.PubSub]},
       # Start Finch
       {Finch, name: Himmel.Finch},
       # Start the Endpoint (http/https)
