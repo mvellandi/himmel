@@ -8,6 +8,11 @@ defmodule HimmelWeb.Utils do
   alias Himmel.Places.Place
   alias Himmel.Weather
 
+  @doc """
+  This function is called when the LiveView is mounted. It quick tests the weather service by first getting
+  the current location weather. If ok, it continues to get the saved places and their weather. If not, it
+  sets the screen to error and displays the error message.
+  """
   def init_data_start(socket) do
     case get_current_location_weather(socket) do
       {:error, reason} ->
@@ -28,6 +33,13 @@ defmodule HimmelWeb.Utils do
     end
   end
 
+  @doc """
+  The entire app state is set here. If a user is authenticated:
+  * Their saved places and associated weather data is async retrieved and assigned.
+  * The main weather is set to their last active place
+
+  Otherwise, saved places is set to an empty list and the main weather is set to the current location weather.
+  """
   def init_data_continue(%{current: current_location_weather}, socket) do
     {current_user, active_place_id, saved_places} =
       case socket.assigns.current_user do
@@ -91,6 +103,9 @@ defmodule HimmelWeb.Utils do
       )
   end
 
+  @doc """
+  Gets the user's current location weather based on their IP address.
+  """
   def get_current_location_weather(socket) do
     socket
     |> IP.get_user_ip()
@@ -99,6 +114,9 @@ defmodule HimmelWeb.Utils do
     |> Weather.get_weather()
   end
 
+  @doc """
+  Takes a Place struct and prepares it for the main weather display.
+  """
   def prepare_main_weather(%Place{
         name: name,
         location_id: location_id,
