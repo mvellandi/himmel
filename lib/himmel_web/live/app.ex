@@ -13,6 +13,7 @@ defmodule HimmelWeb.AppLive do
     # if connected?(socket) do
     #   HimmelWeb.Endpoint.subscribe("places")
     # end
+    # TODO: If user is unauthenticated, allow browser refresh to fetch new data IF hours since last fetch > 1
     {:ok, Utils.init_data_start(socket)}
   end
 
@@ -174,5 +175,13 @@ defmodule HimmelWeb.AppLive do
         socket
       ) do
     {:noreply, Utils.update_saved_places_weather(place, socket)}
+  end
+
+  def handle_info(
+        message,
+        socket
+      ) do
+    IO.inspect(message, label: "handle_info message")
+    {:noreply, socket}
   end
 end
