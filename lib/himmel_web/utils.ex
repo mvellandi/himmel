@@ -6,6 +6,7 @@ defmodule HimmelWeb.Utils do
   alias Himmel.Services.{IP, Places}
   alias Himmel.Places
   alias Himmel.Places.Place
+  alias Himmel.PlaceTracker
   alias Himmel.Weather
 
   @doc """
@@ -14,6 +15,8 @@ defmodule HimmelWeb.Utils do
   sets the screen to error and displays the error message.
   """
   def init_data_start(socket) do
+    current_user = socket.assigns[:current_user]
+
     case get_current_location_weather(socket) do
       {:error, reason} ->
         IO.puts("init data start error")
@@ -24,12 +27,13 @@ defmodule HimmelWeb.Utils do
         )
 
       {:ok, weather} ->
-        Phoenix.PubSub.subscribe(
-          Himmel.PubSub,
-          "weather_updates:#{weather.location_id}"
-        )
+        if current_user do
+          weather.location_id
+          |> channel_name()
+          |> subscribe_to_weather_updates_and_track_client(current_user)
+        end
 
-        init_data_continue(%{current: weather}, socket)
+        init_data_continue(weather, socket)
     end
   end
 
@@ -40,7 +44,7 @@ defmodule HimmelWeb.Utils do
 
   Otherwise, saved places is set to an empty list and the main weather is set to the current location weather.
   """
-  def init_data_continue(%{current: current_location_weather}, socket) do
+  def init_data_continue(current_location_weather, socket) do
     {current_user, active_place_id, saved_places} =
       case socket.assigns.current_user do
         nil -> {nil, nil, []}
@@ -65,10 +69,14 @@ defmodule HimmelWeb.Utils do
           prepare_main_weather(active_place_weather)
       end
 
-    # Subscribe to all saved places
-    for place <- saved_places do
-      IO.inspect(place.location_id, label: "Subscribing to weather_updates")
-      Phoenix.PubSub.subscribe(Himmel.PubSub, "weather_updates:#{place.location_id}")
+    # Subscribe to all saved places and track user
+    if current_user do
+      for place <- saved_places do
+        subscribe_to_weather_updates_and_track_client(
+          channel_name(place.location_id),
+          current_user
+        )
+      end
     end
 
     saved_places_socket =
@@ -259,5 +267,15 @@ defmodule HimmelWeb.Utils do
     Component.assign(socket,
       saved_places: %AsyncResult{async_saved_places | result: updated_saved_places}
     )
+  end
+
+  def subscribe_to_weather_updates_and_track_client(channel, user) do
+    IO.inspect(channel, label: "Subscribing client")
+    Phoenix.PubSub.subscribe(Himmel.PubSub, channel)
+    Phoenix.Tracker.track(PlaceTracker, self(), channel, user.id, %{name: user.email})
+  end
+
+  defp channel_name(location_id) do
+    "location:#{location_id}"
   end
 end
