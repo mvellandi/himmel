@@ -1,5 +1,6 @@
 defmodule Himmel.Utils do
   @moduledoc false
+  alias Himmel.Places.{Place, Coordinates}
 
   def web_request(url) do
     Finch.build(:get, url) |> Finch.request(Himmel.Finch)
@@ -60,5 +61,9 @@ defmodule Himmel.Utils do
       true -> :night
       false -> :day
     end
+  end
+
+  def location_id_to_coordinates(location_id) do
+    location_id |> String.split(",") |> Enum.map(&String.to_float/1)
   end
 end
