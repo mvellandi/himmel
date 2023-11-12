@@ -78,6 +78,9 @@ config :phoenix, :plug_init_mode, :runtime
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
 
+# Enable Quantum's debug mode
+config :logger, level: :debug
+
 # For IP Info
 config :himmel,
   current_location: {"Hamburg", %{latitude: 53.5488, longitude: 9.9872}}
