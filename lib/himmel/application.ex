@@ -13,16 +13,19 @@ defmodule Himmel.Application do
       HimmelWeb.Telemetry,
       # Start the Ecto repository
       Himmel.Repo,
-      # Start the PubSub system
-      {Phoenix.PubSub, name: Himmel.PubSub},
-      {Himmel.PlaceTracker, [pubsub_server: Himmel.PubSub]},
       # Start Finch
       {Finch, name: Himmel.Finch},
       # Start the Endpoint (http/https)
       HimmelWeb.Endpoint,
+      # Start the PubSub system and Tracker
+      {Phoenix.PubSub, name: Himmel.PubSub},
+      {Himmel.PlaceTracker, [pubsub_server: Himmel.PubSub]},
+      # Start the Scheduler
+      Himmel.Scheduler,
+      # Start the Cache
+      {Cachex, [name: :weather_cache, hooks: [hook(module: Himmel.CacheInfoHook)]]}
       # Start a worker by calling: Himmel.Worker.start_link(arg)
       # {Himmel.Worker, arg}
-      {Cachex, [name: :weather_cache, hooks: [hook(module: Himmel.CacheInfoHook)]]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
