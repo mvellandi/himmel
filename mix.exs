@@ -55,7 +55,8 @@ defmodule Himmel.MixProject do
       {:ipinfo, "~> 1.0"},
       {:tz, "~> 0.26.2"},
       {:domo, "~> 1.5"},
-      {:cachex, "~> 3.6"}
+      {:cachex, "~> 3.6"},
+      {:quantum, "~> 3.5"}
     ]
   end
 
