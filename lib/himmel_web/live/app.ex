@@ -10,10 +10,10 @@ defmodule HimmelWeb.AppLive do
   the last loaded place is shown. Otherwise, the user's IP is used to get the current location and weather.
   """
   def mount(_params, _session, socket) do
-    # if connected?(socket) do
-    #   HimmelWeb.Endpoint.subscribe("places")
-    # end
-    # TODO: If user is unauthenticated, allow browser refresh to fetch new data IF hours since last fetch > 1
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(Himmel.PubSub, "weather_service")
+    end
+
     {:ok, Utils.init_data_start(socket)}
   end
 
@@ -46,6 +46,10 @@ defmodule HimmelWeb.AppLive do
     <header class="hidden lg:flex justify-center gap-4">
       <h1 class="font-extrabold text-5xl py-4 text-shadow-surround">☀️ &nbsp; Himmel &nbsp; 🌧️</h1>
     </header>
+    <%!-- DATA UPDATE ERROR BANNER --%>
+    <%= if @error && @error[:type] == :update do %>
+      <.error_banner error={@error} />
+    <% end %>
     <%!-- SCREEN / LIVEVIEW WRAPPER --%>
     <main class="pb-[6rem] w-full">
       <%!-- > 1280px: CURRENT @SCREEN SHOWN --%>
@@ -177,11 +181,36 @@ defmodule HimmelWeb.AppLive do
     {:noreply, Utils.update_saved_places_weather(place, socket)}
   end
 
-  def handle_info(
-        message,
-        socket
-      ) do
+  def handle_info(%{error: error}, socket) do
+    error = Utils.prepare_error_message(error)
+    IO.inspect(error, label: "handle_info error")
+
+    {:noreply, assign(socket, error: error)}
+  end
+
+  def handle_info(message, socket) do
     IO.inspect(message, label: "handle_info message")
     {:noreply, socket}
+  end
+
+  def error_banner(assigns) do
+    ~H"""
+    <div
+      role="alert"
+      class="rounded-lg px-3 py-2 flex flex-row items-center justify-between gap-2 bg-yellow-200 text-yellow-800"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+        <path
+          fill-rule="evenodd"
+          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z"
+          clip-rule="evenodd"
+        />
+      </svg>
+
+      <p class="text-sm">
+        <%= @error.reason %>. <%= @error.advisory %>.
+      </p>
+    </div>
+    """
   end
 end
