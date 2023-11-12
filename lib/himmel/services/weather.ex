@@ -15,8 +15,8 @@ defmodule Himmel.Services.Weather do
       {:ok, response} ->
         Jason.decode!(response.body)
 
-      {:error, reason} ->
-        IO.inspect(reason, label: "Web request error")
+      {:error, info} ->
+        IO.inspect(info, label: "Web request error")
     end
   end
 
@@ -43,10 +43,10 @@ defmodule Himmel.Services.Weather do
         {:ok, Map.put(place, :weather, weather_info)}
 
       {:ok, %Finch.Response{status: 504}} ->
-        {:error, :timeout}
+        {:error, %{type: :timeout, stage: :initial}}
 
       {:error, %Mint.TransportError{reason: :timeout}} ->
-        {:error, :timeout}
+        {:error, %{type: :timeout, stage: :initial}}
     end
   end
 

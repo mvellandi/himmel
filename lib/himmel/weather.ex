@@ -6,11 +6,12 @@ defmodule Himmel.Weather do
     case Cachex.get(:weather_cache, location_id) do
       {:ok, nil} ->
         with {:ok, weather_data} <- Services.Weather.get_weather(place),
+             IO.inspect(weather_data, label: "cache put weather data"),
              {:ok, true} <- Cachex.put(:weather_cache, location_id, weather_data, ttl: 1_800_000) do
           {:ok, weather_data}
         else
-          {:error, false} -> {:error, :cache_put_false}
-          {:error, reason} -> {:error, reason}
+          {:error, false} -> {:error, %{type: :cache, stage: :cache_put}}
+          {:error, info} -> {:error, info}
         end
 
       {:ok, weather_data} ->

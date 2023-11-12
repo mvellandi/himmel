@@ -18,12 +18,12 @@ defmodule HimmelWeb.Utils do
     current_user = socket.assigns[:current_user]
 
     case get_current_location_weather(socket) do
-      {:error, reason} ->
+      {:error, info} ->
         IO.puts("init data start error")
 
         Component.assign(socket,
           screen: :error,
-          error: prepare_error_message(reason)
+          error: prepare_error_message(info)
         )
 
       {:ok, weather} ->
@@ -84,6 +84,8 @@ defmodule HimmelWeb.Utils do
         [] ->
           Component.assign(socket, saved_places: %AsyncResult{ok?: true, result: []})
 
+        # TODO: What happens if a saved place has a custom name? That should never be saved to the cache
+        # The danger is that if one user has a custom name for a place, then another user will see that custom name for that place when they request the same location_id from the cache. While we're at it, it seems like we shouldn't be storing the place_id nor the coordinate_id either, as that's a DB item detail.
         places when is_list(places) ->
           # if there's an active place, we don't need to get the weather for it again
           LV.assign_async(socket, :saved_places, fn ->
@@ -106,6 +108,7 @@ defmodule HimmelWeb.Utils do
         main_weather: main_weather,
         current_location: current_location_weather,
         screen: :main,
+        error: nil,
         search: "",
         search_results: nil
       )
@@ -176,10 +179,10 @@ defmodule HimmelWeb.Utils do
           updated_user: updated_user
         )
 
-      {:error, reason} ->
+      {:error, info} ->
         Component.assign(socket,
           screen: :error,
-          error: prepare_error_message(reason)
+          error: prepare_error_message(info)
         )
     end
   end
@@ -235,16 +238,25 @@ defmodule HimmelWeb.Utils do
       )
   end
 
-  def prepare_error_message(type) do
-    case type do
-      :timeout ->
+  def prepare_error_message(%{type: type, stage: stage}) do
+    case {type, stage} do
+      {:timeout, _} ->
         %{
+          type: type,
           reason: "We're having trouble reaching the weather service",
           advisory: "Please try again later"
         }
 
+      {:timeout, :update} ->
+        %{
+          type: :update,
+          reason: "We can't reach the weather service for updates",
+          advisory: "We'll try again later"
+        }
+
       _ ->
         %{
+          type: :unknown,
           reason: "Hmmm, we're having technical difficulties right now",
           advisory: "Please try again later"
         }

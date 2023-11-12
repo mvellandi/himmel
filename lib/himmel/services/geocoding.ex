@@ -33,8 +33,8 @@ defmodule Himmel.Services.Geocoding do
             end)
         end
 
-      {:error, reason} ->
-        IO.inspect(reason, label: "Web request error")
+      {:error, info} ->
+        IO.inspect(info, label: "Web request error")
     end
   end
 end
