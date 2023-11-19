@@ -51,8 +51,6 @@ defmodule HimmelWeb.AppLive do
     <%= if @error && @error[:stage] == :update do %>
       <.error_banner error={@error} />
     <% end %>
-    <%!-- UPDATE INFO --%>
-    <p><%= @last_updated %></p>
     <%!-- SCREEN / LIVEVIEW WRAPPER --%>
     <main class="pb-[6rem] w-full">
       <%!-- > 1280px: CURRENT @SCREEN SHOWN --%>
@@ -185,12 +183,7 @@ defmodule HimmelWeb.AppLive do
     if total_places == total_updates do
       updated_socket = Utils.process_all_place_updates(updates, socket)
 
-      # TODO: retrieving client's local time and updating socket.assigns 'last_updated'
-
-      {:noreply,
-       assign(updated_socket,
-         last_updated: "update time: #{Utils.time_now_to_string()}"
-       )}
+      {:noreply, updated_socket}
     else
       {:noreply, assign(socket, updates: updates)}
     end

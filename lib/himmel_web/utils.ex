@@ -103,8 +103,6 @@ defmodule HimmelWeb.Utils do
           end)
       end
 
-    # TODO: retrieving client's local time and updating socket.assigns 'last_updated'
-
     _updated_socket =
       Component.assign(saved_places_socket,
         main_weather: main_weather,
@@ -113,8 +111,7 @@ defmodule HimmelWeb.Utils do
         error: nil,
         search: "",
         search_results: nil,
-        updates: [],
-        last_updated: "mount time: #{time_now_to_string()}"
+        updates: []
       )
   end
 
