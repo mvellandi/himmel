@@ -1,6 +1,5 @@
 defmodule Himmel.Utils do
   @moduledoc false
-  alias Himmel.Places.{Place, Coordinates}
 
   def web_request(url) do
     Finch.build(:get, url) |> Finch.request(Himmel.Finch)
