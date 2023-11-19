@@ -62,6 +62,13 @@ config :phoenix, :json_library, Jason
 # For time zone support
 config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 
+# Configure CRON jobs
+config :himmel, Himmel.Data.Scheduler,
+  jobs: [
+    # Every hour, update the weather for all saved places
+    {"0 * * * *", fn -> Himmel.Data.Scheduler.update_all_places_weather() end}
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

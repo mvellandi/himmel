@@ -1,7 +1,6 @@
 defmodule Himmel.Services.Weather do
   alias Himmel.Utils
   alias Himmel.Weather.Descriptions
-  alias Himmel.Places.{Place, Coordinates}
 
   def get_raw_weather_hamburg() do
     response =
@@ -15,14 +14,19 @@ defmodule Himmel.Services.Weather do
       {:ok, response} ->
         Jason.decode!(response.body)
 
-      {:error, reason} ->
-        IO.inspect(reason, label: "Web request error")
+      {:error, info} ->
+        IO.inspect(info, label: "Web request error")
     end
   end
 
+  @spec get_weather(location_id :: String.t(), non_neg_integer()) ::
+          {:ok, WeatherInfo.t()} | {:error, map()}
   def get_weather(
-        %Place{coordinates: %Coordinates{latitude: latitude, longitude: longitude}} = place
+        location_id,
+        retries \\ 3
       ) do
+    [latitude, longitude] = Utils.location_id_to_coordinates(location_id)
+
     response =
       Utils.web_request(
         "https://api.open-meteo.com/v1/forecast?hourly=temperature_2m,weathercode&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,weathercode&current_weather=true&forecast_days=10&timezone=auto&" <>
@@ -40,13 +44,16 @@ defmodule Himmel.Services.Weather do
           |> prepare_daily_weather()
           |> prepare_hourly_weather(36)
 
-        {:ok, Map.put(place, :weather, weather_info)}
+        {:ok, weather_info}
 
       {:ok, %Finch.Response{status: 504}} ->
-        {:error, :timeout}
+        {:error, %{type: :timeout}}
 
       {:error, %Mint.TransportError{reason: :timeout}} ->
-        {:error, :timeout}
+        {:error, %{type: :timeout}}
+
+      {:error, %Mint.TransportError{reason: :closed}} when retries > 0 ->
+        get_weather(location_id, retries - 1)
     end
   end
 

@@ -10,15 +10,17 @@ defmodule HimmelWeb.AppLive do
   the last loaded place is shown. Otherwise, the user's IP is used to get the current location and weather.
   """
   def mount(_params, _session, socket) do
-    # if connected?(socket) do
-    #   HimmelWeb.Endpoint.subscribe("places")
-    # end
+    # This is for receiving any notifications regarding the weather service
+    if connected?(socket) and socket.assigns[:current_user] do
+      Phoenix.PubSub.subscribe(Himmel.PubSub, "weather_service")
+    end
+
     {:ok, Utils.init_data_start(socket)}
   end
 
   def handle_params(_params, _uri, socket) do
-    # user_places = Enum.map(socket.assigns.current_user.places, fn p -> p.name end)
-    # IO.inspect(user_places, label: "handle_params, user places")
+    # current_location = socket.assigns.current_location |> Map.drop([:weather])
+    # IO.inspect(current_location, label: "current location")
     {:noreply, socket}
   end
 
@@ -45,6 +47,10 @@ defmodule HimmelWeb.AppLive do
     <header class="hidden lg:flex justify-center gap-4">
       <h1 class="font-extrabold text-5xl py-4 text-shadow-surround">☀️ &nbsp; Himmel &nbsp; 🌧️</h1>
     </header>
+    <%!-- DATA UPDATE ERROR BANNER --%>
+    <%= if @error && @error[:stage] == :update do %>
+      <.error_banner error={@error} />
+    <% end %>
     <%!-- SCREEN / LIVEVIEW WRAPPER --%>
     <main class="pb-[6rem] w-full">
       <%!-- > 1280px: CURRENT @SCREEN SHOWN --%>
@@ -72,9 +78,6 @@ defmodule HimmelWeb.AppLive do
     </main>
     """
   end
-
-  # def handle_event(%Phoenix.PubSub.Broadcast{}) do
-  # end
 
   def handle_event("show_settings", _, socket) do
     screen = if socket.assigns.screen == :settings, do: :main, else: :settings
@@ -154,7 +157,6 @@ defmodule HimmelWeb.AppLive do
 
   def handle_event("set_main_weather_to_current_location", _, socket) do
     current_user = socket.assigns[:current_user]
-    # IO.inspect(socket.assigns.current_user, label: "current user")
     current_location = socket.assigns.current_location
 
     updated_user =
@@ -170,5 +172,55 @@ defmodule HimmelWeb.AppLive do
        main_weather: Utils.prepare_main_weather(current_location),
        current_user: updated_user
      )}
+  end
+
+  def handle_info({:place_weather_update, info}, socket) do
+    previous_updates = socket.assigns[:updates]
+    updates = [info | previous_updates]
+    total_updates = length(updates)
+    total_places = Utils.total_places(socket)
+
+    if total_places == total_updates do
+      updated_socket = Utils.process_all_place_updates(updates, socket)
+
+      {:noreply, updated_socket}
+    else
+      {:noreply, assign(socket, updates: updates)}
+    end
+  end
+
+  def handle_info({:weather_service, %{status: :error} = error}, socket) do
+    {:noreply, assign(socket, error: Utils.prepare_error_message(error))}
+  end
+
+  @doc "Generic error handler"
+  def handle_info(%{error: error}, socket) do
+    IO.inspect(error, label: "App: handle_info error")
+    {:noreply, assign(socket, error: Utils.prepare_error_message(error))}
+  end
+
+  def handle_info(_message, socket) do
+    {:noreply, socket}
+  end
+
+  def error_banner(assigns) do
+    ~H"""
+    <div
+      role="alert"
+      class="rounded-lg px-3 py-2 flex flex-row items-center justify-between gap-2 bg-yellow-200 text-yellow-800"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+        <path
+          fill-rule="evenodd"
+          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z"
+          clip-rule="evenodd"
+        />
+      </svg>
+
+      <p class="text-sm">
+        <%= @error.reason %>. <%= @error.advisory %>.
+      </p>
+    </div>
+    """
   end
 end
