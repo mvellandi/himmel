@@ -21,7 +21,7 @@ defmodule Himmel.Application do
       {Phoenix.PubSub, name: Himmel.PubSub},
       {Himmel.PlaceTracker, [pubsub_server: Himmel.PubSub]},
       # Start the Scheduler
-      Himmel.Scheduler,
+      Himmel.Data.Scheduler,
       # Start the Cache
       {Cachex, [name: :weather_cache, hooks: [hook(module: Himmel.CacheInfoHook)]]}
       # Start a worker by calling: Himmel.Worker.start_link(arg)
