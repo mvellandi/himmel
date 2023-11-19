@@ -1,84 +1,105 @@
-defmodule Himmel.Scheduler do
-  alias Himmel.Places.{Place, Coordinates}
+defmodule Himmel.Data.Scheduler do
+  alias Himmel.Services
 
   use Quantum, otp_app: :himmel
 
-  def update_data_start() do
-    IO.puts("periodic weather update")
-
+  def update_all_places_weather() do
     # Fetch all location_ids from the cache.
-    {:ok, [first_id | rest_ids]} = Cachex.keys(:weather_cache)
+    {:ok, all_locations} = Cachex.keys(:weather_cache)
+    # IO.inspect(all, label: "all location_ids")
+    if length(all_locations) > 0 do
+      [first_id | rest_ids] = all_locations
 
-    # Test the connection to the weather API. If it fails, we don't want to continue.
-    case test_weather_service(first_id) do
-      {:error, _info} ->
-        IO.puts("periodic weather update error")
+      case update_place_weather(first_id) do
+        :ok ->
+          IO.puts("Scheduler: first location success. Continuing...")
+          process_places(rest_ids)
 
-        Phoenix.PubSub.broadcast(MyApp.PubSub, "weather_service", %{
-          error: %{type: :timeout, stage: :update}
-        })
+        {:error, info} ->
+          # Let all clients know the weather service is down and abort further updates
+          IO.puts("Scheduler: first location error. Aborting...")
+          Phoenix.PubSub.broadcast(Himmel.PubSub, "weather_service", {:weather_service, info})
 
-      {:ok, weather_data} ->
-        IO.puts("periodic weather update success")
-        Phoenix.PubSub.broadcast(MyApp.PubSub, first_id, weather_data)
-        update_data_continue(rest_ids)
+        :place_dropped ->
+          IO.puts("Scheduler: first location dropped. Continuing...")
+          process_places(rest_ids)
+      end
     end
   end
 
-  def update_data_continue(location_ids) do
-    # Create a job queue
-    queue = Enum.into(location_ids, :queue.new())
+  def update_place_weather(location_id, options \\ []) do
+    retries = Keyword.get(options, :retries, 3)
 
-    # Define a function to process each job
-    processor = fn location_id ->
-      # Check for subscribers
-      subscribers = Phoenix.Tracker.list(MyApp.PubSub, location_id)
-      [latitude, longitude] = Himmel.Utils.location_id_to_coordinates(location_id)
+    # Check for subscribers
+    subscribers = Phoenix.Tracker.list(Himmel.PlaceTracker, "location:#{location_id}")
+    IO.puts("Scheduler: #{length(subscribers)} subscribers for #{location_id}")
 
-      # If there are subscribers, fetch fresh data, update the cache, and publish the updates
+    # If there are subscribers, fetch fresh data, update the cache, and publish the updates
+    response =
       if length(subscribers) > 0 do
-        # Fetch fresh data
-        response =
-          Himmel.Services.Weather.get_weather(%Place{
-            coordinates: %Coordinates{latitude: latitude, longitude: longitude}
-          })
-
-        case response do
-          {:ok, weather_data} ->
-            # Update the cache
-            # TODO: Fix this. Are we putting the whole place or just the weather data for that location?
-            # {:ok, true} = Cachex.put(:weather_cache, location_id, weather_data)
-
-            # Publish the updates
-            Phoenix.PubSub.broadcast(Himmel.PubSub, location_id, weather_data)
-
-          {:error, info} ->
-            # TODO: Okay, maybe this is just a single connection error. We don't want to stop the whole process. So maybe we should put the location_id back in the queue?
-            # But what if multiple location_ids have errors? At a certain point, we should stop or kill the process if there's no data coming in. Maybe we should have a counter for errors and if it reaches a certain number, we stop the process and send a specific message to clients via PubSub. The client handler can then conditionally display a hazard icon or something to indicate that the weather data is stale, so that way clients can still use the app, but they know that the data is stale.
-            IO.inspect(info, label: "Weather update error")
-            new_data = %{}
-        end
+        Services.Weather.get_weather(location_id)
+      else
+        nil
       end
+
+    case response do
+      {:ok, weather = %WeatherInfo{}} ->
+        {:ok, true} = Cachex.put(:weather_cache, location_id, weather)
+        info = %{status: :ok, location_id: location_id, weather: weather}
+        publish_update(location_id, info)
+        :ok
+
+      {:error, _} when retries > 0 ->
+        __MODULE__.update_place_weather(location_id, retries: retries - 1)
+
+      {:error, info} ->
+        updated_info =
+          %{status: :error, location_id: location_id, stage: :update} |> Map.merge(info)
+
+        publish_update(location_id, updated_info)
+        {:error, updated_info}
+
+      nil ->
+        {:ok, true} = Cachex.del(:weather_cache, location_id)
+        :place_dropped
+    end
+  end
+
+  def process_places(location_ids) do
+    processor = fn location_id ->
+      __MODULE__.update_place_weather(location_id)
     end
 
     # Process the jobs
-    Task.async_stream(queue, processor, max_concurrency: 10)
+    Task.async_stream(location_ids, processor, max_concurrency: 10)
     |> Enum.each(fn {:ok, _} -> :ok end)
+
+    IO.puts("Scheduler: All locations processed and published")
   end
 
-  def test() do
-    IO.puts("test")
-
-    # Phoenix.PubSub.broadcast(Himmel.PubSub, "weather_service", %{error: %{type: :timeout, stage: :update}})
+  defp publish_update(channel, info) do
+    Phoenix.PubSub.broadcast(Himmel.PubSub, "location:#{channel}", {:place_weather_update, info})
   end
 
-  # Test the connection to the weather API. If it fails, we don't want to continue.
-  def test_weather_service(location_id) do
-    IO.puts("test weather service with sample data")
-    [latitude, longitude] = Himmel.Utils.location_id_to_coordinates(location_id)
+  # def update_data_test() do
+  #   queue = ["a", "b", "c", "z", "a", "b", "c"]
 
-    Himmel.Services.Weather.get_weather(%Place{
-      coordinates: %Coordinates{latitude: latitude, longitude: longitude}
-    })
-  end
+  #   processor = fn letter ->
+  #     __MODULE__.test(letter, 3)
+  #   end
+
+  #   Task.async_stream(queue, processor, max_concurrency: 10)
+  #   |> Enum.each(fn {:ok, _} -> :ok end)
+  # end
+
+  # def test(letter, 0), do: IO.puts("The letter was #{letter}. Continuing...")
+
+  # def test(letter, int) do
+  #   if letter in ["a", "b", "c"] do
+  #     IO.inspect(self(), label: "test:#{letter}:#{int}")
+  #   else
+  #     IO.inspect(self(), label: "letter not found; trying again")
+  #     __MODULE__.test(letter, int - 1)
+  #   end
+  # end
 end

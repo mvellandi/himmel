@@ -10,7 +10,8 @@ defmodule HimmelWeb.AppLive do
   the last loaded place is shown. Otherwise, the user's IP is used to get the current location and weather.
   """
   def mount(_params, _session, socket) do
-    if connected?(socket) do
+    # This is for receiving any notifications regarding the weather service
+    if connected?(socket) and socket.assigns[:current_user] do
       Phoenix.PubSub.subscribe(Himmel.PubSub, "weather_service")
     end
 
@@ -18,8 +19,8 @@ defmodule HimmelWeb.AppLive do
   end
 
   def handle_params(_params, _uri, socket) do
-    # user_places = Enum.map(socket.assigns.current_user.places, fn p -> p.name end)
-    # IO.inspect(user_places, label: "handle_params, user places")
+    # current_location = socket.assigns.current_location |> Map.drop([:weather])
+    # IO.inspect(current_location, label: "current location")
     {:noreply, socket}
   end
 
@@ -47,9 +48,11 @@ defmodule HimmelWeb.AppLive do
       <h1 class="font-extrabold text-5xl py-4 text-shadow-surround">☀️ &nbsp; Himmel &nbsp; 🌧️</h1>
     </header>
     <%!-- DATA UPDATE ERROR BANNER --%>
-    <%= if @error && @error[:type] == :update do %>
+    <%= if @error && @error[:stage] == :update do %>
       <.error_banner error={@error} />
     <% end %>
+    <%!-- UPDATE INFO --%>
+    <p><%= @last_updated %></p>
     <%!-- SCREEN / LIVEVIEW WRAPPER --%>
     <main class="pb-[6rem] w-full">
       <%!-- > 1280px: CURRENT @SCREEN SHOWN --%>
@@ -156,7 +159,6 @@ defmodule HimmelWeb.AppLive do
 
   def handle_event("set_main_weather_to_current_location", _, socket) do
     current_user = socket.assigns[:current_user]
-    # IO.inspect(socket.assigns.current_user, label: "current user")
     current_location = socket.assigns.current_location
 
     updated_user =
@@ -174,22 +176,37 @@ defmodule HimmelWeb.AppLive do
      )}
   end
 
-  def handle_info(
-        {:weather_update, %{location_id: _, weather: _} = place},
-        socket
-      ) do
-    {:noreply, Utils.update_saved_places_weather(place, socket)}
+  def handle_info({:place_weather_update, info}, socket) do
+    previous_updates = socket.assigns[:updates]
+    updates = [info | previous_updates]
+    total_updates = length(updates)
+    total_places = Utils.total_places(socket)
+
+    if total_places == total_updates do
+      updated_socket = Utils.process_all_place_updates(updates, socket)
+
+      # TODO: retrieving client's local time and updating socket.assigns 'last_updated'
+
+      {:noreply,
+       assign(updated_socket,
+         last_updated: "update time: #{Utils.time_now_to_string()}"
+       )}
+    else
+      {:noreply, assign(socket, updates: updates)}
+    end
   end
 
+  def handle_info({:weather_service, %{status: :error} = error}, socket) do
+    {:noreply, assign(socket, error: Utils.prepare_error_message(error))}
+  end
+
+  @doc "Generic error handler"
   def handle_info(%{error: error}, socket) do
-    error = Utils.prepare_error_message(error)
-    IO.inspect(error, label: "handle_info error")
-
-    {:noreply, assign(socket, error: error)}
+    IO.inspect(error, label: "App: handle_info error")
+    {:noreply, assign(socket, error: Utils.prepare_error_message(error))}
   end
 
-  def handle_info(message, socket) do
-    IO.inspect(message, label: "handle_info message")
+  def handle_info(_message, socket) do
     {:noreply, socket}
   end
 
