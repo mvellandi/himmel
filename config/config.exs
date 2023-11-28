@@ -66,7 +66,8 @@ config :elixir, :time_zone_database, Tz.TimeZoneDatabase
 config :himmel, Himmel.Data.Scheduler,
   jobs: [
     # Every hour, update the weather for all saved places
-    {"0 * * * *", fn -> Himmel.Data.Scheduler.update_all_places_weather() end}
+    # {"0 * * * *", fn -> Himmel.Data.Scheduler.update_all_places_weather() end}
+    {"0 * * * *", {Himmel.Data.Scheduler, :update_all_places_weather, []}}
   ]
 
 # Import environment specific config. This must remain at the bottom
