@@ -6,7 +6,7 @@ defmodule Himmel.Data.Scheduler do
   def update_all_places_weather() do
     # Fetch all location_ids from the cache.
     {:ok, all_locations} = Cachex.keys(:weather_cache)
-    # IO.inspect(all, label: "all location_ids")
+
     if length(all_locations) > 0 do
       [first_id | rest_ids] = all_locations
 
@@ -80,26 +80,4 @@ defmodule Himmel.Data.Scheduler do
   defp publish_update(channel, info) do
     Phoenix.PubSub.broadcast(Himmel.PubSub, "location:#{channel}", {:place_weather_update, info})
   end
-
-  # def update_data_test() do
-  #   queue = ["a", "b", "c", "z", "a", "b", "c"]
-
-  #   processor = fn letter ->
-  #     __MODULE__.test(letter, 3)
-  #   end
-
-  #   Task.async_stream(queue, processor, max_concurrency: 10)
-  #   |> Enum.each(fn {:ok, _} -> :ok end)
-  # end
-
-  # def test(letter, 0), do: IO.puts("The letter was #{letter}. Continuing...")
-
-  # def test(letter, int) do
-  #   if letter in ["a", "b", "c"] do
-  #     IO.inspect(self(), label: "test:#{letter}:#{int}")
-  #   else
-  #     IO.inspect(self(), label: "letter not found; trying again")
-  #     __MODULE__.test(letter, int - 1)
-  #   end
-  # end
 end
