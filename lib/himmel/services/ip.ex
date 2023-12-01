@@ -6,11 +6,20 @@ defmodule Himmel.Services.IP do
 
   @doc "Gets the IP of the requesting client"
   def get_user_ip(socket) do
-    get_connect_info(socket, :x_headers)
-    |> Enum.find(fn {key, _} -> key == "x-forwarded-for" end)
-    |> elem(1)
-    |> String.split(",")
-    |> hd()
+    case Mix.env() do
+      :dev ->
+        # run this code if in development
+        peer_data = get_connect_info(socket, :peer_data)
+        peer_data.address |> :inet.ntoa() |> to_string()
+
+      :prod ->
+        # run this code if in production
+        get_connect_info(socket, :x_headers)
+        |> Enum.find(fn {key, _} -> key == "x-forwarded-for" end)
+        |> elem(1)
+        |> String.split(",")
+        |> hd()
+    end
   end
 
   @doc "Gets the coordinates and city from an IP address"
