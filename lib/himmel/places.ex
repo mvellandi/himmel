@@ -28,7 +28,8 @@ defmodule Himmel.Places do
     {name, coordinates} =
       case current_location do
         nil ->
-          {details.city, %Coordinates{latitude: details.latitude, longitude: details.longitude}}
+          [latitude, longitude] = details["loc"] |> String.split(",")
+          {details["city"], %Coordinates{latitude: latitude, longitude: longitude}}
 
         {name, coordinates} ->
           {name, %Coordinates{latitude: coordinates.latitude, longitude: coordinates.longitude}}
