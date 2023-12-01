@@ -1,6 +1,7 @@
 defmodule Himmel.Services.Weather do
   alias Himmel.Utils
   alias Himmel.Weather.Descriptions
+  require Logger
 
   def get_raw_weather_hamburg() do
     response =
@@ -15,7 +16,7 @@ defmodule Himmel.Services.Weather do
         Jason.decode!(response.body)
 
       {:error, info} ->
-        IO.inspect(info, label: "Web request error")
+        Logger.error("Web request error: #{inspect(info)}")
     end
   end
 

@@ -1,4 +1,5 @@
 defmodule Himmel.Services.Geocoding do
+  require Logger
   import Himmel.Utils
 
   @doc "Gets a list of search results for a place"
@@ -34,7 +35,7 @@ defmodule Himmel.Services.Geocoding do
         end
 
       {:error, info} ->
-        IO.inspect(info, label: "Web request error")
+        Logger.error(inspect(info, label: "Web request error"))
     end
   end
 end
