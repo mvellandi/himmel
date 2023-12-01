@@ -32,7 +32,7 @@ erl_crash.dump
 himmel-*.tar
 
 # Ignore assets that are produced by build tools.
-/priv/static/assets/
+/priv/static
 
 # Ignore digested assets cache.
 /priv/static/cache_manifest.json
@@ -43,3 +43,11 @@ npm-debug.log
 
 # System-related files
 .DS_STORE
+
+# releases
+/rel
+
+# Deployment files
+.dockerignore
+Dockerfile
+fly.toml
