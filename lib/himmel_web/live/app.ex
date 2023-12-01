@@ -4,6 +4,7 @@ defmodule HimmelWeb.AppLive do
   alias Himmel.Services
   alias Himmel.Accounts
   import HimmelWeb.Components.{Main, Places, Settings, ApplicationError}
+  require Logger
 
   @doc """
   MAIN shows data for the current PLACE. If there's a user session or authenticated user's places and history,
@@ -13,14 +14,13 @@ defmodule HimmelWeb.AppLive do
     # This is for receiving any notifications regarding the weather service
     if connected?(socket) and socket.assigns[:current_user] do
       Phoenix.PubSub.subscribe(Himmel.PubSub, "weather_service")
+      {:ok, socket}
     end
 
     {:ok, Utils.init_data_start(socket)}
   end
 
   def handle_params(_params, _uri, socket) do
-    # current_location = socket.assigns.current_location |> Map.drop([:weather])
-    # IO.inspect(current_location, label: "current location")
     {:noreply, socket}
   end
 
@@ -195,7 +195,7 @@ defmodule HimmelWeb.AppLive do
 
   @doc "Generic error handler"
   def handle_info(%{error: error}, socket) do
-    IO.inspect(error, label: "App: handle_info error")
+    Logger.error("App: handle_info error: #{inspect(error)}")
     {:noreply, assign(socket, error: Utils.prepare_error_message(error))}
   end
 
