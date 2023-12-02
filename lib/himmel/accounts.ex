@@ -280,9 +280,11 @@ defmodule Himmel.Accounts do
     if user.confirmed_at do
       {:error, :already_confirmed}
     else
-      {encoded_token, user_token} = UserToken.build_email_token(user, "confirm")
-      Repo.insert!(user_token)
-      UserNotifier.deliver_confirmation_instructions(user, confirmation_url_fun.(encoded_token))
+      # TODO: Uncomment this when we have a mailer
+      # {encoded_token, user_token} = UserToken.build_email_token(user, "confirm")
+      # Repo.insert!(user_token)
+      # UserNotifier.deliver_confirmation_instructions(user, confirmation_url_fun.(encoded_token))
+      {:ok, nil}
     end
   end
 
