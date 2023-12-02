@@ -106,10 +106,6 @@ defmodule HimmelWeb.UserRegistrationLive do
     end
   end
 
-  def handle_info(:reset_shake, socket) do
-    {:noreply, assign(socket, :shake, false)}
-  end
-
   def handle_event("save", %{"user" => user_params}, socket) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
@@ -130,6 +126,10 @@ defmodule HimmelWeb.UserRegistrationLive do
   def handle_event("validate", %{"user" => user_params}, socket) do
     changeset = Accounts.change_user_registration(%User{}, user_params)
     {:noreply, assign_form(socket, Map.put(changeset, :action, :validate))}
+  end
+
+  def handle_info(:reset_shake, socket) do
+    {:noreply, assign(socket, :shake, false)}
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
