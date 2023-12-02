@@ -5,18 +5,26 @@ defmodule HimmelWeb.UserLoginLive do
     ~H"""
     <div class="mx-auto max-w-sm pt-28">
       <.header class="text-center pb-4">
-        Sign in
+        Try out Himmel
         <:subtitle>
-          Don't have an account?<br />
-          <.link navigate={~p"/user/register"} class="text-xl font-bold text-brand underline">
+          <span class="text-primary-dark font-bold">Email:</span> demo@himmel.com<br />
+          <span class="text-primary-dark font-bold">Password:</span> weathertoday<br />
+          <%!-- PREVIOUS REGISTRATION LINK --%>
+          <%!-- <.link navigate={~p"/user/register"} class="text-xl font-bold text-brand underline">
             Register here
-          </.link>
+          </.link> --%>
         </:subtitle>
       </.header>
 
       <.simple_form for={@form} id="login_form" action={~p"/user/log_in"} phx-update="ignore">
-        <.input field={@form[:email]} type="email" label="Email" required />
-        <.input field={@form[:password]} type="password" label="Password" required />
+        <.input field={@form[:email]} type="email" label="Email" value="demo@himmel.com" required />
+        <.input
+          field={@form[:password]}
+          type="password"
+          label="Password"
+          value="weathertoday"
+          required
+        />
 
         <:actions>
           <.input field={@form[:remember_me]} type="checkbox" label="Keep me logged in" />
