@@ -4,20 +4,61 @@ defmodule HimmelWeb.UserRegistrationLive do
   alias Himmel.Accounts
   alias Himmel.Accounts.User
 
+  def mount(_params, _session, socket) do
+    # TODO: Get pin code from environment variable
+    secret_pin = Application.get_env(:himmel, :registration_pin)
+
+    socket =
+      socket
+      |> assign(
+        secret_pin: secret_pin,
+        pin: "",
+        show_registration_form: false,
+        shake: false
+      )
+
+    {:ok, socket}
+  end
+
   def render(assigns) do
     ~H"""
     <div class="mx-auto max-w-sm pt-28">
-      <.header class="text-center pb-4">
-        Register for an account
+      <.header class="text-center pb-10">
+        You found the secret registration page!
         <:subtitle>
-          Already registered?<br />
-          <.link navigate={~p"/user/log_in"} class="text-xl font-bold text-brand underline">
+          Already registered?
+          <.link navigate={~p"/user/log_in"} class="font-bold text-brand underline">
             Sign in here
           </.link>
         </:subtitle>
       </.header>
 
+      <form
+        :if={!@show_registration_form}
+        for="pin"
+        id="pin_form"
+        phx-submit="submit_pin"
+        phx-change="set_pin"
+        class={@shake && "shake"}
+      >
+        <div class="flex flex-col items-center h-16 gap-6">
+          <input
+            type="text"
+            name="pin"
+            value={@pin}
+            phx-debounce="300"
+            placeholder="pin code"
+            autocomplete="off"
+            class="text-center text-4xl w-52 text-white placeholder:text-primary-medium p-4 rounded-xl bg-primary-dark placeholder:focus:text-transparent"
+          />
+          <button class="text-xl w-32 p-3 rounded-xl outline-none border-2 border-primary-light bg-secondary-dark">
+            Submit
+          </button>
+        </div>
+      </form>
+
       <.simple_form
+        :if={@show_registration_form}
         for={@form}
         id="registration_form"
         phx-submit="save"
@@ -30,7 +71,7 @@ defmodule HimmelWeb.UserRegistrationLive do
           Oops, something went wrong! Please check the errors below.
         </.error>
 
-        <.input field={@form[:email]} type="email" label="Email" required />
+        <.input field={@form[:email]} type="email" label="Email" class="p-4" required />
         <.input field={@form[:password]} type="password" label="Password" required />
 
         <:actions>
@@ -41,15 +82,32 @@ defmodule HimmelWeb.UserRegistrationLive do
     """
   end
 
-  def mount(_params, _session, socket) do
-    changeset = Accounts.change_user_registration(%User{})
+  def handle_event("set_pin", %{"pin" => pin}, socket) do
+    {:noreply, assign(socket, pin: pin)}
+  end
 
-    socket =
-      socket
-      |> assign(trigger_submit: false, check_errors: false)
-      |> assign_form(changeset)
+  def handle_event("submit_pin", %{"pin" => pin}, socket) do
+    if pin == socket.assigns.secret_pin do
+      changeset = Accounts.change_user_registration(%User{})
 
-    {:ok, socket, temporary_assigns: [form: nil]}
+      socket =
+        socket
+        |> assign(
+          trigger_submit: false,
+          check_errors: false,
+          show_registration_form: true
+        )
+        |> assign_form(changeset)
+
+      {:noreply, assign(socket, temporary_assigns: [form: nil])}
+    else
+      Process.send_after(self(), :reset_shake, 500)
+      {:noreply, assign(socket, :shake, true)}
+    end
+  end
+
+  def handle_info(:reset_shake, socket) do
+    {:noreply, assign(socket, :shake, false)}
   end
 
   def handle_event("save", %{"user" => user_params}, socket) do
