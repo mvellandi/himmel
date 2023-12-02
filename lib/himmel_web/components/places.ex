@@ -3,7 +3,7 @@ defmodule HimmelWeb.Components.Places do
 
   def places(assigns) do
     ~H"""
-    <div class={"#{if @screen == :places, do: "flex", else: "hidden md:flex"} flex-col gap-3 pt-[120px] w-full max-w-[420px]"}>
+    <div class={"#{if @screen == :places, do: "flex", else: "hidden md:flex"} flex-col gap-3 pt-[120px] w-full min-w-[390px] max-w-[440px]"}>
       <h1 class="text-4xl font-bold pl-4 text-shadow-surround">Places</h1>
       <%!-- SEARCH --%>
       <.search_bar search={@search} />
@@ -76,7 +76,7 @@ defmodule HimmelWeb.Components.Places do
         <% end) %>
       <% else %>
         <div class="flex justify-center items-center rounded-xl bg-primary-dark py-3.5 px-4">
-          <h2 class="text-2xl font-bold">No saved places</h2>
+          <h2 class="text-xl font-med text-primary-medium">No saved places</h2>
         </div>
       <% end %>
     </.async_result>
