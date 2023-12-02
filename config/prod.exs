@@ -13,6 +13,9 @@ config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: Himmel.Finch
 # Disable Swoosh Local Memory Storage
 config :swoosh, local: false
 
+# Let the app know it is running in production mode
+config :himmel, :env, :prod
+
 # Do not print debug messages in production
 config :logger, level: :info
 

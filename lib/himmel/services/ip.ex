@@ -5,7 +5,7 @@ defmodule Himmel.Services.IP do
 
   @doc "Gets the IP of the requesting client"
   def get_user_ip(socket) do
-    case Mix.env() do
+    case Application.get_env(:himmel, :env) do
       :dev ->
         # run this code if in development
         peer_data = get_connect_info(socket, :peer_data)

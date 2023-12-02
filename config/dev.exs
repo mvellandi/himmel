@@ -10,6 +10,9 @@ config :himmel, Himmel.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
+# Let the app know it is running in devlopment mode
+config :himmel, :env, :dev
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
