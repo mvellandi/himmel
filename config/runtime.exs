@@ -21,15 +21,24 @@ if System.get_env("PHX_SERVER") do
 end
 
 # IPINFO_TOKEN is used to get the user's IP address and location.
-ipinfo_token =
-  System.get_env("IPINFO_TOKEN") ||
-    raise """
-    environment variable IPINFO_TOKEN is missing.
-    You can get one by signing up at https://ipinfo.io/signup
-    """
+ipinfo_token = System.get_env("IPINFO_TOKEN")
+
+if ipinfo_token == nil do
+  Logger.warning("environment variable IPINFO_TOKEN is missing")
+end
 
 config :ipinfo, token: ipinfo_token
 
+# Registration pin code
+registration_pin = System.get_env("REGISTRATION_PIN")
+
+if registration_pin == nil do
+  Logger.warning("environment variable REGISTRATION_PIN is missing")
+end
+
+config :himmel, registration_pin: registration_pin
+
+# Configure your database
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
