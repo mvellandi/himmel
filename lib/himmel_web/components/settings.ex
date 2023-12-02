@@ -18,7 +18,7 @@ defmodule HimmelWeb.Components.Settings do
             <span class="inline-block mb-2">
               Not signed in
             </span>
-            <p class="text-lg py-4">
+            <p class="text-xl sm:text-lg py-4">
               To save your places and access weather from any device, register for a free account today.
             </p>
           <% end %>
@@ -53,7 +53,7 @@ defmodule HimmelWeb.Components.Settings do
           <%!-- NOT LOGGED IN --%>
           <div class="flex flex-col gap-4">
             <.link
-              href={~p"/user/register"}
+              href={~p"/user/log_in"}
               method="get"
               class="text-center bg-secondary-dark rounded-xl py-4 px-10 text-lg leading-none border-2"
             >
