@@ -3,26 +3,8 @@ defmodule HimmelWeb.Components.Settings do
 
   def settings(assigns) do
     ~H"""
-    <div class={"#{if @screen == :settings, do: "flex", else: "hidden xl:flex"} flex-col gap-3 pt-[120px] w-full max-w-[420px]"}>
+    <div class={"#{if @screen == :settings, do: "flex", else: "hidden xl:flex"} flex-col gap-3 pt-[120px] w-full max-w-[400px]"}>
       <h1 class="text-4xl font-bold ml-4 text-shadow-surround">Settings</h1>
-      <%!-- TEMPERATURE --%>
-      <%!-- <div class="flex flex-col justify-between rounded-xl bg-primary-dark py-3.5 px-4 gap-1">
-        <h3 class="text-lg text-primary-light pl-2">Temperature</h3>
-        <div class="flex gap-9">
-          <button
-            phx-click="celsius"
-            class={"#{if @data.temperature_scale == :celsius, do: "bg-primary-vibrant border-primary-darker border-4", else: "border-2 border-primary-medium text-primary-medium"} rounded-xl py-4 px-12 text-4xl font-light leading-none"}
-          >
-            C
-          </button>
-          <button
-            phx-click="fahrenheit"
-            class={"#{if @data.temperature_scale == :fahrenheit, do: "bg-primary-vibrant border-primary-darker border-4", else: "border-2  border-primary-medium text-primary-medium"} rounded-xl py-4 px-12 text-4xl font-light leading-none"}
-          >
-            F
-          </button>
-        </div>
-      </div> --%>
       <%!-- ACCOUNT --%>
       <div class="flex flex-col rounded-xl bg-primary-dark pt-3.5 pb-8 px-4 gap-1">
         <%!-- USE DETAILS > SUMMARY + content tags to show/hide elements --%>
@@ -36,7 +18,7 @@ defmodule HimmelWeb.Components.Settings do
             <span class="inline-block mb-2">
               Not signed in
             </span>
-            <p class="text-xl py-4">
+            <p class="text-lg py-4">
               To save your places and access weather from any device, register for a free account today.
             </p>
           <% end %>
