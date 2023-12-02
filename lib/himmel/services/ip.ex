@@ -1,6 +1,5 @@
 defmodule Himmel.Services.IP do
   import Phoenix.LiveView, only: [get_connect_info: 2]
-  # alias :ipinfo, as: IPinfo
   alias Himmel.Utils
   require Logger
 
