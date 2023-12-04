@@ -6,14 +6,14 @@ defmodule HimmelWeb.UserRegistrationLive do
 
   def mount(_params, _session, socket) do
     # TODO: Get pin code from environment variable
-    secret_pin = Application.get_env(:himmel, :registration_pin)
+    secret_pin = Application.get_env(:himmel, :admin_user_pin)
 
     socket =
       socket
       |> assign(
         secret_pin: secret_pin,
         pin: "",
-        show_registration_form: false,
+        show_page: false,
         shake: false
       )
 
@@ -22,7 +22,7 @@ defmodule HimmelWeb.UserRegistrationLive do
 
   def render(assigns) do
     ~H"""
-    <div class="mx-auto max-w-sm pt-28">
+    <div class="mx-auto max-w-sm pt-28 pb-16">
       <.header class="text-center pb-10">
         You found the secret registration page!
         <:subtitle>
@@ -34,7 +34,7 @@ defmodule HimmelWeb.UserRegistrationLive do
       </.header>
 
       <form
-        :if={!@show_registration_form}
+        :if={!@show_page}
         for="pin"
         id="pin_form"
         phx-submit="submit_pin"
@@ -58,7 +58,7 @@ defmodule HimmelWeb.UserRegistrationLive do
       </form>
 
       <.simple_form
-        :if={@show_registration_form}
+        :if={@show_page}
         for={@form}
         id="registration_form"
         phx-submit="save"
@@ -95,7 +95,7 @@ defmodule HimmelWeb.UserRegistrationLive do
         |> assign(
           trigger_submit: false,
           check_errors: false,
-          show_registration_form: true
+          show_page: true
         )
         |> assign_form(changeset)
 
