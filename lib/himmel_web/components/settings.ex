@@ -3,7 +3,7 @@ defmodule HimmelWeb.Components.Settings do
 
   def settings(assigns) do
     ~H"""
-    <div class={"#{if @screen == :settings, do: "flex", else: "hidden xl:flex"} flex-col gap-3 pt-[120px] w-full max-w-[400px]"}>
+    <div class={"#{if @screen == :settings, do: "flex", else: "hidden xl:flex"} flex-col gap-3 pt-[120px] w-full lg:max-w-[400px]"}>
       <h1 class="text-4xl font-bold ml-4 text-shadow-surround">Settings</h1>
       <%!-- ACCOUNT --%>
       <div class="flex flex-col rounded-xl bg-primary-dark pt-3.5 pb-8 px-4 gap-1">
@@ -33,13 +33,14 @@ defmodule HimmelWeb.Components.Settings do
               </span>
             </summary>
             <div class="flex flex-col gap-4">
-              <.link
+              <%!-- DISABLED FOR DEMO APP --%>
+              <%!-- <.link
                 href={~p"/user/settings"}
                 method="get"
                 class="text-center rounded-xl py-4 px-10 text-lg text-primary-light leading-none border-2 border-primary-light"
               >
                 Change Email / Password
-              </.link>
+              </.link> --%>
               <.link
                 href={~p"/user/log_out"}
                 method="delete"

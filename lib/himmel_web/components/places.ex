@@ -3,7 +3,7 @@ defmodule HimmelWeb.Components.Places do
 
   def places(assigns) do
     ~H"""
-    <div class={"#{if @screen == :places, do: "flex", else: "hidden md:flex"} flex-col gap-3 pt-[120px] w-full min-w-[390px] max-w-[440px]"}>
+    <div class={"#{if @screen == :places, do: "flex", else: "hidden md:flex"} flex-col gap-3 pt-[120px] w-full md:min-w-[320px] md:max-w-[440px] lg:min-w-[380px]"}>
       <h1 class="text-4xl font-bold pl-4 text-shadow-surround">Places</h1>
       <%!-- SEARCH --%>
       <.search_bar search={@search} />

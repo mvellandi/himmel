@@ -3,12 +3,13 @@ defmodule HimmelWeb.Components.Main do
 
   def main(assigns) do
     ~H"""
-    <div class={"#{if @screen == :main, do: "flex", else: "hidden md:flex"} flex-col gap-3 w-full md:max-w-[400px] lg:min-w-[450px] xl:max-w-[450px] 2xl:max-w=[520px]"}>
+    <div class={"#{if @screen == :main, do: "flex", else: "hidden md:flex"} flex-col gap-3 w-full max-w-[500px] md:min-w-[350px] md:max-w-[450px] lg:min-w-[450px] xl:max-w-[450px] 2xl:max-w=[520px]"}>
       <%!-- CURRENT --%>
       <div class="self-center justify-self-center w-full ">
         <div class="flex justify-center w-full">
-          <%!-- <%= if length(parent.places) > 1 && "this isn't the first place" do %> --%>
-          <%!-- <button>P</button> --%>
+          <%!-- OPTION: GO TO PREVIOUS PLACE --%>
+          <%!-- <%= logic %> --%>
+          <%!-- <button> << </button> --%>
           <%!-- <% end %> --%>
           <div class="flex flex-col items-center pt-16 pb-12 text-shadow-surround">
             <h1 class="text-4xl"><%= @main_weather.name %></h1>
@@ -22,8 +23,9 @@ defmodule HimmelWeb.Components.Main do
               <h4>H: <%= @main_weather.high %>&deg;</h4>
             </div>
           </div>
-          <%!-- <%= if length(parent.places) > 1 && "this isn't the last place" do %> --%>
-          <%!-- <button>N</button> --%>
+          <%!-- OPTION: GO TO NEXT PLACE --%>
+          <%!-- <%= logic %> --%>
+          <%!-- <button> >> </button> --%>
           <%!-- <% end %> --%>
         </div>
       </div>
