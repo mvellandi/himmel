@@ -32,12 +32,6 @@ defmodule HimmelWeb.AppLive do
         <button phx-click="show_settings" class="nav-button">
           <%= if @screen == :settings, do: "Return", else: "Settings" %>
         </button>
-        <%!-- IF TIME PERMITS: ADD DOT PAGINATION --%>
-        <%!-- <%= if @screen == :main do %>
-          <div class="flex gap-3">
-            <button>O</button><button>O</button><button>O</button><button>O</button>
-          </div>
-        <% end %> --%>
         <button phx-click="show_places" class="md:hidden nav-button">
           <%= if @screen == :places, do: "Return", else: "My Places" %>
         </button>
@@ -50,6 +44,13 @@ defmodule HimmelWeb.AppLive do
     <%!-- DATA UPDATE ERROR BANNER --%>
     <%= if @error && @error[:stage] == :update do %>
       <.error_banner error={@error} />
+    <% end %>
+    <%= if @mobile_onboarding && @info && !@current_user && !@error do %>
+      <.info_banner
+        info={@info}
+        click_target="show_places"
+        class="md:hidden cursor-pointer mt-4 -mb-9 md:mb-0 md:mt-0"
+      />
     <% end %>
     <%!-- SCREEN / LIVEVIEW WRAPPER --%>
     <main class="pb-[6rem] w-full">
@@ -86,7 +87,7 @@ defmodule HimmelWeb.AppLive do
 
   def handle_event("show_places", _, socket) do
     screen = if socket.assigns.screen == :places, do: :main, else: :places
-    {:noreply, assign(socket, screen: screen)}
+    {:noreply, assign(socket, screen: screen, mobile_onboarding: false, info: nil)}
   end
 
   def handle_event("set_search", %{"name" => name}, socket) do
@@ -207,18 +208,54 @@ defmodule HimmelWeb.AppLive do
     ~H"""
     <div
       role="alert"
-      class="rounded-lg px-3 py-2 flex flex-row items-center justify-between gap-2 bg-yellow-200 text-yellow-800"
+      class={"rounded-lg px-3 py-2 flex flex-row items-center justify-between gap-4 bg-yellow-200 text-yellow-800 #{if @class, do: @class}"}
     >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-16 h-12"
+      >
         <path
-          fill-rule="evenodd"
-          d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z"
-          clip-rule="evenodd"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
         />
       </svg>
 
-      <p class="text-sm">
+      <p class="text-md">
         <%= @error.reason %>. <%= @error.advisory %>.
+      </p>
+    </div>
+    """
+  end
+
+  def info_banner(assigns) do
+    ~H"""
+    <div
+      role="alert"
+      phx-click={@click_target}
+      class={"rounded-lg px-3 py-2 flex flex-row items-center justify-between gap-4 bg-green-200 text-green-800 #{if @class, do: @class}"}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="w-16 h-12"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+        />
+      </svg>
+
+      <p class="text-md">
+        <%= @info %>.
       </p>
     </div>
     """
