@@ -1,5 +1,6 @@
 defmodule Himmel.Data.Scheduler do
   alias Himmel.Services
+  require Logger
 
   use Quantum, otp_app: :himmel
 
@@ -12,16 +13,16 @@ defmodule Himmel.Data.Scheduler do
 
       case update_place_weather(first_id) do
         :ok ->
-          IO.puts("Scheduler: first location success. Continuing...")
+          Logger.info("Scheduler: first location success. Continuing...")
           process_places(rest_ids)
 
         {:error, info} ->
           # Let all clients know the weather service is down and abort further updates
-          IO.puts("Scheduler: first location error. Aborting...")
+          Logger.error("Scheduler: first location error. Aborting...")
           Phoenix.PubSub.broadcast(Himmel.PubSub, "weather_service", {:weather_service, info})
 
         :place_dropped ->
-          IO.puts("Scheduler: first location dropped. Continuing...")
+          Logger.info("Scheduler: first location dropped. Continuing...")
           process_places(rest_ids)
       end
     end
