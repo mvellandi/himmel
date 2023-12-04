@@ -5,7 +5,6 @@ defmodule HimmelWeb.UserRegistrationLive do
   alias Himmel.Accounts.User
 
   def mount(_params, _session, socket) do
-    # TODO: Get pin code from environment variable
     secret_pin = Application.get_env(:himmel, :admin_user_pin)
 
     socket =
