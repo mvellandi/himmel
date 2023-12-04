@@ -31,13 +31,13 @@ end
 config :ipinfo, token: ipinfo_token
 
 # Registration pin code
-registration_pin = System.get_env("REGISTRATION_PIN")
+admin_user_pin = System.get_env("ADMIN_USER_PIN")
 
-if registration_pin == nil do
-  Logger.warning("environment variable REGISTRATION_PIN is missing")
+if admin_user_pin == nil do
+  Logger.warning("environment variable ADMIN_USER_PIN is missing")
 end
 
-config :himmel, registration_pin: registration_pin
+config :himmel, admin_user_pin: admin_user_pin
 
 # Configure your database
 if config_env() == :prod do
