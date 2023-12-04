@@ -109,6 +109,8 @@ defmodule HimmelWeb.Utils do
         current_location: current_location,
         screen: :main,
         error: nil,
+        mobile_onboarding: true,
+        info: "Not your location? Tap here or on 'Places' to search",
         search: "",
         search_results: nil,
         updates: []
