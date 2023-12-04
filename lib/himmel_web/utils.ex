@@ -110,7 +110,7 @@ defmodule HimmelWeb.Utils do
         screen: :main,
         error: nil,
         mobile_onboarding: true,
-        info: "Not your location? Tap here or on 'Places' to search",
+        info: "Not your location? Tap here or on 'My Places' to search",
         search: "",
         search_results: nil,
         updates: []
