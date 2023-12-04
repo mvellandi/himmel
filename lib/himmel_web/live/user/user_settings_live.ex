@@ -3,15 +3,68 @@ defmodule HimmelWeb.UserSettingsLive do
 
   alias Himmel.Accounts
 
+  def mount(%{"token" => token}, _session, socket) do
+    socket =
+      case Accounts.update_user_email(socket.assigns.current_user, token) do
+        :ok ->
+          put_flash(socket, :info, "Email changed successfully.")
+
+        :error ->
+          put_flash(socket, :error, "Email change link is invalid or it has expired.")
+      end
+
+    {:ok, push_navigate(socket, to: ~p"/user/settings")}
+  end
+
+  def mount(_params, _session, socket) do
+    # TODO: Get pin code from environment variable
+    secret_pin = Application.get_env(:himmel, :admin_user_pin)
+
+    socket =
+      socket
+      |> assign(
+        secret_pin: secret_pin,
+        pin: "",
+        show_page: false,
+        shake: false
+      )
+
+    {:ok, socket}
+  end
+
   def render(assigns) do
     ~H"""
-    <.header class="text-center pb-4">
-      Account Settings
-      <:subtitle>Manage your account email address and password settings</:subtitle>
-    </.header>
+    <div class="w-full max-w-sm pt-28 pb-16">
+      <.header class="text-center pb-10">
+        You found the secret account settings page!
+      </.header>
 
-    <div class="space-y-12 divide-y">
-      <div>
+      <form
+        :if={!@show_page}
+        for="pin"
+        id="pin_form"
+        phx-submit="submit_pin"
+        phx-change="set_pin"
+        class={@shake && "shake"}
+      >
+        <div class="flex flex-col items-center h-16 gap-6">
+          <input
+            type="text"
+            name="pin"
+            value={@pin}
+            phx-debounce="300"
+            placeholder="pin code"
+            autocomplete="off"
+            class="text-center text-4xl w-52 text-white placeholder:text-primary-medium p-4 rounded-xl bg-primary-dark placeholder:focus:text-transparent"
+          />
+          <button class="text-xl w-32 p-3 rounded-xl outline-none border-2 border-primary-light bg-secondary-dark">
+            Submit
+          </button>
+        </div>
+      </form>
+
+      <div :if={@show_page}>
+        <h2 class="text-2xl font-bold pb-2">Change Your Email</h2>
         <.simple_form
           for={@email_form}
           id="email_form"
@@ -32,8 +85,8 @@ defmodule HimmelWeb.UserSettingsLive do
             <.button phx-disable-with="Changing...">Change Email</.button>
           </:actions>
         </.simple_form>
-      </div>
-      <div>
+
+        <h2 class="text-2xl font-bold pb-2 pt-10">Change Your Password</h2>
         <.simple_form
           for={@password_form}
           id="password_form"
@@ -43,6 +96,7 @@ defmodule HimmelWeb.UserSettingsLive do
           phx-submit="update_password"
           phx-trigger-action={@trigger_submit}
         >
+          <div class="-mt-8"></div>
           <.input
             field={@password_form[:email]}
             type="hidden"
@@ -73,34 +127,31 @@ defmodule HimmelWeb.UserSettingsLive do
     """
   end
 
-  def mount(%{"token" => token}, _session, socket) do
-    socket =
-      case Accounts.update_user_email(socket.assigns.current_user, token) do
-        :ok ->
-          put_flash(socket, :info, "Email changed successfully.")
-
-        :error ->
-          put_flash(socket, :error, "Email change link is invalid or it has expired.")
-      end
-
-    {:ok, push_navigate(socket, to: ~p"/user/settings")}
+  def handle_event("set_pin", %{"pin" => pin}, socket) do
+    {:noreply, assign(socket, pin: pin)}
   end
 
-  def mount(_params, _session, socket) do
-    user = socket.assigns.current_user
-    email_changeset = Accounts.change_user_email(user)
-    password_changeset = Accounts.change_user_password(user)
+  def handle_event("submit_pin", %{"pin" => pin}, socket) do
+    if pin == socket.assigns.secret_pin do
+      user = socket.assigns.current_user
+      email_changeset = Accounts.change_user_email(user)
+      password_changeset = Accounts.change_user_password(user)
 
-    socket =
-      socket
-      |> assign(:current_password, nil)
-      |> assign(:email_form_current_password, nil)
-      |> assign(:current_email, user.email)
-      |> assign(:email_form, to_form(email_changeset))
-      |> assign(:password_form, to_form(password_changeset))
-      |> assign(:trigger_submit, false)
+      socket =
+        socket
+        |> assign(:show_page, true)
+        |> assign(:current_password, nil)
+        |> assign(:email_form_current_password, nil)
+        |> assign(:current_email, user.email)
+        |> assign(:email_form, to_form(email_changeset))
+        |> assign(:password_form, to_form(password_changeset))
+        |> assign(:trigger_submit, false)
 
-    {:ok, socket}
+      {:noreply, socket}
+    else
+      Process.send_after(self(), :reset_shake, 500)
+      {:noreply, assign(socket, :shake, true)}
+    end
   end
 
   def handle_event("validate_email", params, socket) do
@@ -163,5 +214,9 @@ defmodule HimmelWeb.UserSettingsLive do
       {:error, changeset} ->
         {:noreply, assign(socket, password_form: to_form(changeset))}
     end
+  end
+
+  def handle_info(:reset_shake, socket) do
+    {:noreply, assign(socket, :shake, false)}
   end
 end
