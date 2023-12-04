@@ -19,15 +19,12 @@ defmodule HimmelWeb.Utils do
 
     case get_current_location_weather(socket) do
       {_place, {:error, info}} ->
-        IO.puts("App: init data: start error. Aborting...")
-
         Component.assign(socket,
           screen: :error,
           error: prepare_error_message(Map.put(info, :stage, :initial))
         )
 
       {place, {:ok, weather}} ->
-        IO.puts("App: init data: start success. Continuing...")
         place_with_weather = %{place | weather: weather}
 
         # Subscribe to the current location and track user
