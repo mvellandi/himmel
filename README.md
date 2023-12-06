@@ -14,16 +14,16 @@ Himmel provides current and forecasted weather from any web browser. Users are a
 ## UX Considerations
 - Users are able to fully use the app without an account.
 - Although a user's current location is automatically inferred by their IP address, it is possibly inaccurate. On mobile devices, an advisory banner is displayed to inform users of this possibility with the option to search for a specific location.
+- If an authenticated user closes the app, when they return, the app will show the last viewed location.
 - If the IP address info service is unavailable, the app will default to another location.
 - If the weather service is unavailable, the app will display an advisory message.
 - The UI is well-designed for mobile and desktop.
 
 ## Scalabilty / Performance
-- User accounts and authentication
-- Cache with 30min TTL
-- Hourly weather updates requested only for places with active users
-- Updates are sent to the cache and to subscribers via PubSub
-- Server-side rendering with html updates via WebSockets
+- Cache with 30min TTL.
+- Hourly weather updates are requested only for places with active and authenticated users.
+- Updates are sent to the cache and to subscribers via PubSub.
+- Server-side rendering with html updates via WebSockets.
 
 ## Background
 This application was my capstone project for [Dockyard Academy](https://academy.dockyard.com/), a 3-month live training program in summer 2023. A weather app was chosen because of the challenges in retrieving and processing weather data for specific UI components. To better focus on development, I used the Apple Weather app for design inspiration. In fall 2023, I continued to improve the app by adding a cache, hourly weather updates, a type system for weather info, and error handling among other features. Himmel is a German word meaning "sky" or "heaven".
