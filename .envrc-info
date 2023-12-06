@@ -1,0 +1,8 @@
+# IP Info API
+export IPINFO_TOKEN=TOKEN
+
+# For the demo application in production, this allows you to add a new user accounts and modify that user's settings (email, password)
+export ADMIN_USER_PIN=ANYTHING
+
+# Development: for using Livebook locally
+export LIVEBOOK_HOME=${PWD}/livebook
