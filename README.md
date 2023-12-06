@@ -4,11 +4,11 @@
 Himmel provides current and forecasted weather from any web browser. Users are able to see conditions for their current location and any place they search for. With an account, users can save their favorite places and receive hourly weather updates while the app is open. This app is modified for demo purposes with a guest account and a private admin pin for updating authorization credentials.
 
 ## Tech Stack
-**Language**: Elixir
-**Framework**: Phoenix with LiveView
-**Database**: PostgreSQL
-**APIs**: IPinfo, Open-Meteo
-**CSS**: TailwindCSS
+**Language**: Elixir  
+**Framework**: Phoenix with LiveView  
+**Database**: PostgreSQL  
+**APIs**: IPinfo, Open-Meteo  
+**CSS**: TailwindCSS  
 **Design**: [Figma](https://www.figma.com/file/dg5sUKM9JKNOKSKUHC1spA/_Project---DA---Capstone-Weather?type=design&mode=design&t=pRx3232w0ePhULsv-1)
 
 ## UX Considerations
