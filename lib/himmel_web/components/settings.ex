@@ -4,11 +4,11 @@ defmodule HimmelWeb.Components.Settings do
   def settings(assigns) do
     ~H"""
     <div class={"#{if @screen == :settings, do: "flex", else: "hidden xl:flex"} flex-col gap-3 pt-[120px] w-full lg:max-w-[400px]"}>
-      <h1 class="text-4xl font-bold ml-4 text-shadow-surround">Settings</h1>
+      <h1 class="screen-title">Settings</h1>
       <%!-- ACCOUNT --%>
       <div class="flex flex-col rounded-xl bg-primary-dark pt-3.5 pb-8 px-4 gap-1">
         <%!-- USE DETAILS > SUMMARY + content tags to show/hide elements --%>
-        <div class="flex flex-col pl-2 pb-4">
+        <div class="flex flex-col pb-4 pl-2">
           <h3 class="text-lg text-primary-light">Account</h3>
           <%= if assigns[:current_user] do %>
             <span class="inline-block mb-2">
@@ -18,7 +18,7 @@ defmodule HimmelWeb.Components.Settings do
             <span class="inline-block mb-2">
               Not signed in
             </span>
-            <p class="text-xl sm:text-lg py-4">
+            <p class="py-4 text-xl sm:text-lg">
               To save your places and access weather from any device, register for a free account today.
             </p>
           <% end %>
@@ -28,7 +28,7 @@ defmodule HimmelWeb.Components.Settings do
           <%!-- LOGGED IN --%>
           <details>
             <summary class="pb-6 list-none cursor-pointer">
-              <span class="border border-primary-light px-4 py-2 rounded-xl text-primary-light">
+              <span class="px-4 py-2 border border-primary-light rounded-xl text-primary-light">
                 Manage Account / Sign Out
               </span>
             </summary>
@@ -37,14 +37,14 @@ defmodule HimmelWeb.Components.Settings do
               <%!-- <.link
                 href={~p"/user/settings"}
                 method="get"
-                class="text-center rounded-xl py-4 px-10 text-lg text-primary-light leading-none border-2 border-primary-light"
+                class="px-10 py-4 text-lg leading-none text-center border-2 rounded-xl text-primary-light border-primary-light"
               >
                 Change Email / Password
               </.link> --%>
               <.link
                 href={~p"/user/log_out"}
                 method="delete"
-                class="text-center rounded-xl py-4 px-10 text-lg text-primary-light leading-none border-2 border-primary-light"
+                class="px-10 py-4 text-lg leading-none text-center border-2 rounded-xl text-primary-light border-primary-light"
               >
                 Log out
               </.link>
@@ -56,14 +56,14 @@ defmodule HimmelWeb.Components.Settings do
             <.link
               href={~p"/user/log_in"}
               method="get"
-              class="text-center bg-secondary-dark rounded-xl py-4 px-10 text-lg leading-none border-2"
+              class="px-10 py-4 text-lg leading-none text-center border-2 bg-secondary-dark rounded-xl"
             >
               Register
             </.link>
             <.link
               href={~p"/user/log_in"}
               method="get"
-              class="text-center rounded-xl py-4 px-10 text-lg text-primary-light leading-none border-2 border-primary-light"
+              class="px-10 py-4 text-lg leading-none text-center border-2 rounded-xl text-primary-light border-primary-light"
             >
               Log in
             </.link>

@@ -4,7 +4,7 @@ defmodule HimmelWeb.Components.Places do
   def places(assigns) do
     ~H"""
     <div class={"#{if @screen == :places, do: "flex", else: "hidden md:flex"} flex-col gap-3 pt-[120px] w-full md:min-w-[320px] md:max-w-[440px] lg:min-w-[380px]"}>
-      <h1 class="text-4xl font-bold pl-4 text-shadow-surround">Places</h1>
+      <h1 class="screen-title">Places</h1>
       <%!-- SEARCH --%>
       <.search_bar search={@search} />
       <%!-- SEARCH RESULT LIST --%>
@@ -22,7 +22,7 @@ defmodule HimmelWeb.Components.Places do
                   phx-click="save_search_result"
                   phx-value-search_result_id={result.id}
                 >
-                  <div class="border-2 border-primary-dark px-4 py-2 cursor-pointer rounded-xl bg-primary-dark hover:border-primary-medium hover:border-2">
+                  <div class="px-4 py-2 border-2 cursor-pointer border-primary-dark rounded-xl bg-primary-dark hover:border-primary-medium hover:border-2">
                     <h2 class="text-2xl font-bold"><%= result.name %></h2>
                     <h3 class="font-semibold"><%= result.region %>, <%= result.country %></h3>
                   </div>
@@ -43,10 +43,10 @@ defmodule HimmelWeb.Components.Places do
           >
             <div class="flex flex-col">
               <h2 class="text-2xl font-bold leading-none">My Location</h2>
-              <h3 class="font-semibold pb-4 pt-1"><%= @current_location.name %></h3>
+              <h3 class="pt-1 pb-4 font-semibold"><%= @current_location.name %></h3>
               <h4 class="font-semibold"><%= @current_location.weather.current.description.text %></h4>
             </div>
-            <div class="flex flex-col h-full justify-between items-end">
+            <div class="flex flex-col items-end justify-between h-full">
               <span class="text-5xl font-light leading-[0.9]">
                 <%= @current_location.weather.current.temperature %>&deg;
               </span>
@@ -93,16 +93,16 @@ defmodule HimmelWeb.Components.Places do
     >
       <div class="flex flex-col">
         <h2 class="text-2xl font-bold leading-none"><%= @place.name %></h2>
-        <h3 class="font-semibold pb-4"><%= @place.weather.current.description.text %></h3>
+        <h3 class="pb-4 font-semibold"><%= @place.weather.current.description.text %></h3>
         <button
-          class="cursor-pointer text-primary-light text-left h-6 w-6"
+          class="w-6 h-6 text-left cursor-pointer text-primary-light"
           phx-click="delete_place"
           phx-value-location_id={@place.location_id}
         >
           <.icon_trash />
         </button>
       </div>
-      <div class="flex flex-col justify-between items-end">
+      <div class="flex flex-col items-end justify-between">
         <span class="text-5xl font-light leading-[0.9]">
           <%= @place.weather.current.temperature %>&deg;
         </span>
@@ -119,7 +119,7 @@ defmodule HimmelWeb.Components.Places do
     ~H"""
     <search>
       <form phx-submit="search_places" phx-change="set_search">
-        <div class="inline-flex items-center justify-between w-full h-10 rounded-xl bg-primary-dark text-primary-light py-2 pl-2">
+        <div class="inline-flex items-center justify-between w-full h-10 py-2 pl-2 rounded-xl bg-primary-dark text-primary-light">
           <div class="relative w-full">
             <input
               type="text"
@@ -128,12 +128,12 @@ defmodule HimmelWeb.Components.Places do
               phx-debounce="300"
               placeholder="Search for a city or place"
               autocomplete="off"
-              class="w-full bg-transparent text-white placeholder:text-primary-light pl-2 pr-8"
+              class="w-full pl-2 pr-8 text-white bg-transparent placeholder:text-primary-light"
             />
             <%= if @search !== "" do %>
               <span
                 phx-click="clear_search"
-                class="absolute right-0 top-0 h-full w-8 bg-primary-dark flex place-content-center cursor-pointer"
+                class="absolute top-0 right-0 flex w-8 h-full cursor-pointer bg-primary-dark place-content-center"
               >
                 <.icon_x_circle />
               </span>
