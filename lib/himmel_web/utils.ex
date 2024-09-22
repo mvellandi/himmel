@@ -1,7 +1,7 @@
 defmodule HimmelWeb.Utils do
   alias Himmel.Accounts
   alias Phoenix.Component
-  alias Phoenix.LiveView, as: LV
+  require Phoenix.LiveView, as: LV
   alias Phoenix.LiveView.AsyncResult
   alias Himmel.Services.{IP, Places}
   alias Himmel.Places
