@@ -34,6 +34,7 @@ small {
     --white: 0deg 0% 100%;
   }
 
+  /* SCROLLBARS */
   body,
   #hours {
     scrollbar-color: var(--primary-medium) var(--primary-dark);
@@ -51,21 +52,25 @@ small {
   }
 }
 
-/* GLOBAL STYLES */
+/* HEADINGS, NAVIGATION */
+.screen-title {
+  @apply ml-4 text-4xl font-bold text-shadow-surround;
+}
+
+.nav-button {
+  @apply p-3 border rounded-xl bg-primary-darker border-primary-light;
+  @apply font-medium tracking-[0.05rem];
+  user-select: none;
+}
+
+/* VISUAL EFFECTS */
 .text-shadow-surround {
   text-shadow: 2px 2px 4px hsl(209deg 60% 52% / 0.3),
     -2px -2px 4px hsl(209deg 60% 52%), 2px -2px 4px hsl(209deg 60% 52% / 0.3),
     -2px 2px 4px hsl(209deg 60% 52% / 0.3);
 }
 
-/* COMPONENTS */
-.nav-button {
-  @apply p-3 rounded-xl bg-primary-darker border border-primary-light;
-  @apply font-medium tracking-[0.05rem];
-  user-select: none;
-}
-
-/* EFFECTS */
+/* ANIMATION */
 @keyframes shake {
   0%,
   100% {
